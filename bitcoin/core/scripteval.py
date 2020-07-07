@@ -19,8 +19,9 @@ module.
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import sys
+
 _bord = ord
-if sys.version > '3':
+if sys.version > "3":
     long = int
     _bord = lambda x: x
 
@@ -50,17 +51,18 @@ SCRIPT_VERIFY_CLEANSTACK = object()
 SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY = object()
 
 SCRIPT_VERIFY_FLAGS_BY_NAME = {
-    'P2SH': SCRIPT_VERIFY_P2SH,
-    'STRICTENC': SCRIPT_VERIFY_STRICTENC,
-    'DERSIG': SCRIPT_VERIFY_DERSIG,
-    'LOW_S': SCRIPT_VERIFY_LOW_S,
-    'NULLDUMMY': SCRIPT_VERIFY_NULLDUMMY,
-    'SIGPUSHONLY': SCRIPT_VERIFY_SIGPUSHONLY,
-    'MINIMALDATA': SCRIPT_VERIFY_MINIMALDATA,
-    'DISCOURAGE_UPGRADABLE_NOPS': SCRIPT_VERIFY_DISCOURAGE_UPGRADABLE_NOPS,
-    'CLEANSTACK': SCRIPT_VERIFY_CLEANSTACK,
-    'CHECKLOCKTIMEVERIFY': SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY,
+    "P2SH": SCRIPT_VERIFY_P2SH,
+    "STRICTENC": SCRIPT_VERIFY_STRICTENC,
+    "DERSIG": SCRIPT_VERIFY_DERSIG,
+    "LOW_S": SCRIPT_VERIFY_LOW_S,
+    "NULLDUMMY": SCRIPT_VERIFY_NULLDUMMY,
+    "SIGPUSHONLY": SCRIPT_VERIFY_SIGPUSHONLY,
+    "MINIMALDATA": SCRIPT_VERIFY_MINIMALDATA,
+    "DISCOURAGE_UPGRADABLE_NOPS": SCRIPT_VERIFY_DISCOURAGE_UPGRADABLE_NOPS,
+    "CLEANSTACK": SCRIPT_VERIFY_CLEANSTACK,
+    "CHECKLOCKTIMEVERIFY": SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY,
 }
+
 
 class EvalScriptError(bitcoin.core.ValidationError):
     """Base class for exceptions raised when a script fails during EvalScript()
@@ -68,12 +70,24 @@ class EvalScriptError(bitcoin.core.ValidationError):
     The execution state just prior the opcode raising the is saved. (if
     available)
     """
-    def __init__(self,
-                 msg,
-                 sop=None, sop_data=None, sop_pc=None,
-                 stack=None, scriptIn=None, txTo=None, inIdx=None, flags=None,
-                 altstack=None, vfExec=None, pbegincodehash=None, nOpCount=None):
-        super(EvalScriptError, self).__init__('EvalScript: %s' % msg)
+
+    def __init__(
+        self,
+        msg,
+        sop=None,
+        sop_data=None,
+        sop_pc=None,
+        stack=None,
+        scriptIn=None,
+        txTo=None,
+        inIdx=None,
+        flags=None,
+        altstack=None,
+        vfExec=None,
+        pbegincodehash=None,
+        nOpCount=None,
+    ):
+        super(EvalScriptError, self).__init__("EvalScript: %s" % msg)
 
         self.sop = sop
         self.sop_data = sop_data
@@ -88,37 +102,47 @@ class EvalScriptError(bitcoin.core.ValidationError):
         self.pbegincodehash = pbegincodehash
         self.nOpCount = nOpCount
 
+
 class MaxOpCountError(EvalScriptError):
     def __init__(self, **kwargs):
-        super(MaxOpCountError, self).__init__('max opcode count exceeded',**kwargs)
+        super(MaxOpCountError, self).__init__("max opcode count exceeded", **kwargs)
+
 
 class MissingOpArgumentsError(EvalScriptError):
     """Missing arguments"""
+
     def __init__(self, opcode, s, n, **kwargs):
         super(MissingOpArgumentsError, self).__init__(
-                'missing arguments for %s; need %d items, but only %d on stack' %
-                                   (OPCODE_NAMES[opcode], n, len(s)),
-                **kwargs)
+            "missing arguments for %s; need %d items, but only %d on stack"
+            % (OPCODE_NAMES[opcode], n, len(s)),
+            **kwargs
+        )
+
 
 class ArgumentsInvalidError(EvalScriptError):
     """Arguments are invalid"""
+
     def __init__(self, opcode, msg, **kwargs):
         super(ArgumentsInvalidError, self).__init__(
-                '%s args invalid: %s' % (OPCODE_NAMES[opcode], msg),
-                **kwargs)
+            "%s args invalid: %s" % (OPCODE_NAMES[opcode], msg), **kwargs
+        )
 
 
 class VerifyOpFailedError(EvalScriptError):
     """A VERIFY opcode failed"""
+
     def __init__(self, opcode, **kwargs):
-        super(VerifyOpFailedError, self).__init__('%s failed' % OPCODE_NAMES[opcode],
-                                                  **kwargs)
+        super(VerifyOpFailedError, self).__init__(
+            "%s failed" % OPCODE_NAMES[opcode], **kwargs
+        )
+
 
 def _CastToBigNum(s, err_raiser):
     v = bitcoin.core._bignum.vch2bn(s)
     if len(s) > MAX_NUM_SIZE:
-        raise err_raiser(EvalScriptError, 'CastToBigNum() : overflow')
+        raise err_raiser(EvalScriptError, "CastToBigNum() : overflow")
     return v
+
 
 def _CastToBool(s):
     for i in range(len(s)):
@@ -176,7 +200,7 @@ def _CheckMultiSig(opcode, script, stack, txTo, inIdx, flags, err_raiser, nOpCou
     i += 1
     isig = i
     i += sigs_count
-    if len(stack) < i-1:
+    if len(stack) < i - 1:
         raise err_raiser(ArgumentsInvalidError, opcode, "not enough sigs on stack")
     elif len(stack) < i:
         raise err_raiser(ArgumentsInvalidError, opcode, "missing dummy value")
@@ -216,7 +240,7 @@ def _CheckMultiSig(opcode, script, stack, txTo, inIdx, flags, err_raiser, nOpCou
     # Note how Bitcoin Core duplicates the len(stack) check, rather than
     # letting pop() handle it; maybe that's wrong?
     if len(stack) and SCRIPT_VERIFY_NULLDUMMY in flags:
-        if stack[-1] != b'':
+        if stack[-1] != b"":
             raise err_raiser(ArgumentsInvalidError, opcode, "dummy value not OP_0")
 
     stack.pop()
@@ -239,6 +263,7 @@ _ISA_UNOP = {
     OP_NOT,
     OP_0NOTEQUAL,
 }
+
 
 def _UnaryOp(opcode, stack, err_raiser):
     if len(stack) < 1:
@@ -287,6 +312,7 @@ _ISA_BINOP = {
     OP_MIN,
     OP_MAX,
 }
+
 
 def _BinOp(opcode, stack, err_raiser):
     if len(stack) < 2:
@@ -370,13 +396,15 @@ def _EvalScript(stack, scriptIn, txTo, inIdx, flags=()):
 
     """
     if len(scriptIn) > MAX_SCRIPT_SIZE:
-        raise EvalScriptError('script too large; got %d bytes; maximum %d bytes' %
-                                        (len(scriptIn), MAX_SCRIPT_SIZE),
-                              stack=stack,
-                              scriptIn=scriptIn,
-                              txTo=txTo,
-                              inIdx=inIdx,
-                              flags=flags)
+        raise EvalScriptError(
+            "script too large; got %d bytes; maximum %d bytes"
+            % (len(scriptIn), MAX_SCRIPT_SIZE),
+            stack=stack,
+            scriptIn=scriptIn,
+            txTo=txTo,
+            inIdx=inIdx,
+            flags=flags,
+        )
 
     altstack = []
     vfExec = []
@@ -394,16 +422,24 @@ def _EvalScript(stack, scriptIn, txTo, inIdx, flags=()):
 
             Fills in the state of execution for you.
             """
-            raise cls(*args,
-                    sop=sop,
-                    sop_data=sop_data,
-                    sop_pc=sop_pc,
-                    stack=stack, scriptIn=scriptIn, txTo=txTo, inIdx=inIdx, flags=flags,
-                    altstack=altstack, vfExec=vfExec, pbegincodehash=pbegincodehash, nOpCount=nOpCount[0])
-
+            raise cls(
+                *args,
+                sop=sop,
+                sop_data=sop_data,
+                sop_pc=sop_pc,
+                stack=stack,
+                scriptIn=scriptIn,
+                txTo=txTo,
+                inIdx=inIdx,
+                flags=flags,
+                altstack=altstack,
+                vfExec=vfExec,
+                pbegincodehash=pbegincodehash,
+                nOpCount=nOpCount[0]
+            )
 
         if sop in DISABLED_OPCODES:
-            err_raiser(EvalScriptError, 'opcode %s is disabled' % OPCODE_NAMES[sop])
+            err_raiser(EvalScriptError, "opcode %s is disabled" % OPCODE_NAMES[sop])
 
         if sop > OP_16:
             nOpCount[0] += 1
@@ -414,12 +450,13 @@ def _EvalScript(stack, scriptIn, txTo, inIdx, flags=()):
             if len(stack) < n:
                 err_raiser(MissingOpArgumentsError, sop, stack, n)
 
-
         if sop <= OP_PUSHDATA4:
             if len(sop_data) > MAX_SCRIPT_ELEMENT_SIZE:
-                err_raiser(EvalScriptError,
-                           'PUSHDATA of length %d; maximum allowed is %d' %
-                                (len(sop_data), MAX_SCRIPT_ELEMENT_SIZE))
+                err_raiser(
+                    EvalScriptError,
+                    "PUSHDATA of length %d; maximum allowed is %d"
+                    % (len(sop_data), MAX_SCRIPT_ELEMENT_SIZE),
+                )
 
             elif fExec:
                 stack.append(sop_data)
@@ -486,7 +523,9 @@ def _EvalScript(stack, scriptIn, txTo, inIdx, flags=()):
 
             elif sop == OP_CHECKMULTISIG or sop == OP_CHECKMULTISIGVERIFY:
                 tmpScript = CScript(scriptIn[pbegincodehash:])
-                _CheckMultiSig(sop, tmpScript, stack, txTo, inIdx, flags, err_raiser, nOpCount)
+                _CheckMultiSig(
+                    sop, tmpScript, stack, txTo, inIdx, flags, err_raiser, nOpCount
+                )
 
             elif sop == OP_CHECKSIG or sop == OP_CHECKSIGVERIFY:
                 check_args(2)
@@ -500,8 +539,7 @@ def _EvalScript(stack, scriptIn, txTo, inIdx, flags=()):
                 # scriptSig and scriptPubKey are processed separately.
                 tmpScript = FindAndDelete(tmpScript, CScript([vchSig]))
 
-                ok = _CheckSig(vchSig, vchPubKey, tmpScript, txTo, inIdx,
-                               err_raiser)
+                ok = _CheckSig(vchSig, vchPubKey, tmpScript, txTo, inIdx, err_raiser)
                 if not ok and sop == OP_CHECKSIGVERIFY:
                     err_raiser(VerifyOpFailedError, sop)
 
@@ -535,12 +573,12 @@ def _EvalScript(stack, scriptIn, txTo, inIdx, flags=()):
 
             elif sop == OP_ELSE:
                 if len(vfExec) == 0:
-                    err_raiser(EvalScriptError, 'ELSE found without prior IF')
+                    err_raiser(EvalScriptError, "ELSE found without prior IF")
                 vfExec[-1] = not vfExec[-1]
 
             elif sop == OP_ENDIF:
                 if len(vfExec) == 0:
-                    err_raiser(EvalScriptError, 'ENDIF found without prior IF')
+                    err_raiser(EvalScriptError, "ENDIF found without prior IF")
                 vfExec.pop()
 
             elif sop == OP_EQUAL:
@@ -590,7 +628,6 @@ def _EvalScript(stack, scriptIn, txTo, inIdx, flags=()):
 
                 vfExec.append(val)
 
-
             elif sop == OP_IFDUP:
                 check_args(1)
                 vch = stack[-1]
@@ -606,7 +643,10 @@ def _EvalScript(stack, scriptIn, txTo, inIdx, flags=()):
 
             elif sop >= OP_NOP1 and sop <= OP_NOP10:
                 if SCRIPT_VERIFY_DISCOURAGE_UPGRADABLE_NOPS in flags:
-                    err_raiser(EvalScriptError, "%s reserved for soft-fork upgrades" % OPCODE_NAMES[sop])
+                    err_raiser(
+                        EvalScriptError,
+                        "%s reserved for soft-fork upgrades" % OPCODE_NAMES[sop],
+                    )
                 else:
                     pass
 
@@ -619,10 +659,13 @@ def _EvalScript(stack, scriptIn, txTo, inIdx, flags=()):
                 check_args(2)
                 n = _CastToBigNum(stack.pop(), err_raiser)
                 if n < 0 or n >= len(stack):
-                    err_raiser(EvalScriptError, "Argument for %s out of bounds" % OPCODE_NAMES[sop])
-                vch = stack[-n-1]
+                    err_raiser(
+                        EvalScriptError,
+                        "Argument for %s out of bounds" % OPCODE_NAMES[sop],
+                    )
+                vch = stack[-n - 1]
                 if sop == OP_ROLL:
-                    del stack[-n-1]
+                    del stack[-n - 1]
                 stack.append(vch)
 
             elif sop == OP_RETURN:
@@ -631,7 +674,7 @@ def _EvalScript(stack, scriptIn, txTo, inIdx, flags=()):
             elif sop == OP_RIPEMD160:
                 check_args(1)
 
-                h = hashlib.new('ripemd160')
+                h = hashlib.new("ripemd160")
                 h.update(stack.pop())
                 stack.append(h.digest())
 
@@ -699,20 +742,22 @@ def _EvalScript(stack, scriptIn, txTo, inIdx, flags=()):
                     stack.append(b"\x00")
 
             else:
-                err_raiser(EvalScriptError, 'unsupported opcode 0x%x' % sop)
+                err_raiser(EvalScriptError, "unsupported opcode 0x%x" % sop)
 
         # size limits
         if len(stack) + len(altstack) > MAX_STACK_ITEMS:
-            err_raiser(EvalScriptError, 'max stack items limit reached')
+            err_raiser(EvalScriptError, "max stack items limit reached")
 
     # Unterminated IF/NOTIF/ELSE block
     if len(vfExec):
-        raise EvalScriptError('Unterminated IF/ELSE block',
-                              stack=stack,
-                              scriptIn=scriptIn,
-                              txTo=txTo,
-                              inIdx=inIdx,
-                              flags=flags)
+        raise EvalScriptError(
+            "Unterminated IF/ELSE block",
+            stack=stack,
+            scriptIn=scriptIn,
+            txTo=txTo,
+            inIdx=inIdx,
+            flags=flags,
+        )
 
 
 def EvalScript(stack, scriptIn, txTo, inIdx, flags=()):
@@ -732,15 +777,19 @@ def EvalScript(stack, scriptIn, txTo, inIdx, flags=()):
     try:
         _EvalScript(stack, scriptIn, txTo, inIdx, flags=flags)
     except CScriptInvalidError as err:
-        raise EvalScriptError(repr(err),
-                              stack=stack,
-                              scriptIn=scriptIn,
-                              txTo=txTo,
-                              inIdx=inIdx,
-                              flags=flags)
+        raise EvalScriptError(
+            repr(err),
+            stack=stack,
+            scriptIn=scriptIn,
+            txTo=txTo,
+            inIdx=inIdx,
+            flags=flags,
+        )
+
 
 class VerifyScriptError(bitcoin.core.ValidationError):
     pass
+
 
 def VerifyScript(scriptSig, scriptPubKey, txTo, inIdx, flags=()):
     """Verify a scriptSig satisfies a scriptPubKey
@@ -798,6 +847,7 @@ def VerifyScript(scriptSig, scriptPubKey, txTo, inIdx, flags=()):
 class VerifySignatureError(bitcoin.core.ValidationError):
     pass
 
+
 def VerifySignature(txFrom, txTo, inIdx):
     """Verify a scriptSig signature can spend a txout
 
@@ -823,26 +873,26 @@ def VerifySignature(txFrom, txTo, inIdx):
 
 
 __all__ = (
-        'MAX_STACK_ITEMS',
-        'SCRIPT_VERIFY_P2SH',
-        'SCRIPT_VERIFY_STRICTENC',
-        'SCRIPT_VERIFY_DERSIG',
-        'SCRIPT_VERIFY_LOW_S',
-        'SCRIPT_VERIFY_NULLDUMMY',
-        'SCRIPT_VERIFY_SIGPUSHONLY',
-        'SCRIPT_VERIFY_MINIMALDATA',
-        'SCRIPT_VERIFY_DISCOURAGE_UPGRADABLE_NOPS',
-        'SCRIPT_VERIFY_CLEANSTACK',
-        'SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY',
-        'SCRIPT_VERIFY_FLAGS_BY_NAME',
-        'EvalScriptError',
-        'MaxOpCountError',
-        'MissingOpArgumentsError',
-        'ArgumentsInvalidError',
-        'VerifyOpFailedError',
-        'EvalScript',
-        'VerifyScriptError',
-        'VerifyScript',
-        'VerifySignatureError',
-        'VerifySignature',
+    "MAX_STACK_ITEMS",
+    "SCRIPT_VERIFY_P2SH",
+    "SCRIPT_VERIFY_STRICTENC",
+    "SCRIPT_VERIFY_DERSIG",
+    "SCRIPT_VERIFY_LOW_S",
+    "SCRIPT_VERIFY_NULLDUMMY",
+    "SCRIPT_VERIFY_SIGPUSHONLY",
+    "SCRIPT_VERIFY_MINIMALDATA",
+    "SCRIPT_VERIFY_DISCOURAGE_UPGRADABLE_NOPS",
+    "SCRIPT_VERIFY_CLEANSTACK",
+    "SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY",
+    "SCRIPT_VERIFY_FLAGS_BY_NAME",
+    "EvalScriptError",
+    "MaxOpCountError",
+    "MissingOpArgumentsError",
+    "ArgumentsInvalidError",
+    "VerifyOpFailedError",
+    "EvalScript",
+    "VerifyScriptError",
+    "VerifyScript",
+    "VerifySignatureError",
+    "VerifySignature",
 )

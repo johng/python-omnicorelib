@@ -22,7 +22,7 @@ import struct
 # Py3 compatibility
 import sys
 
-if sys.version > '3':
+if sys.version > "3":
     _bchr = lambda x: bytes([x])
     _bord = lambda x: x[0]
     from io import BytesIO as _BytesIO
@@ -38,9 +38,10 @@ def Hash(msg):
     """SHA256^2)(msg) -> bytes"""
     return hashlib.sha256(hashlib.sha256(msg).digest()).digest()
 
+
 def Hash160(msg):
     """RIPEME160(SHA256(msg)) -> bytes"""
-    h = hashlib.new('ripemd160')
+    h = hashlib.new("ripemd160")
     h.update(hashlib.sha256(msg).digest())
     return h.digest()
 
@@ -55,6 +56,7 @@ class SerializationTruncationError(SerializationError):
     Thrown by deserialize() and stream_deserialize()
     """
 
+
 class DeserializationExtraDataError(SerializationError):
     """Deserialized data had extra data at the end
 
@@ -62,10 +64,12 @@ class DeserializationExtraDataError(SerializationError):
     deserialization. The deserialized object and extra padding not consumed are
     saved.
     """
+
     def __init__(self, msg, obj, padding):
         super(DeserializationExtraDataError, self).__init__(msg)
         self.obj = obj
         self.padding = padding
+
 
 def ser_read(f, n):
     """Read from a stream safely
@@ -75,10 +79,12 @@ def ser_read(f, n):
     functions.
     """
     if n > MAX_SIZE:
-        raise SerializationError('Asked to read 0x%x bytes; MAX_SIZE exceeded' % n)
+        raise SerializationError("Asked to read 0x%x bytes; MAX_SIZE exceeded" % n)
     r = f.read(n)
     if len(r) < n:
-        raise SerializationTruncationError('Asked to read %i bytes, but only got %i' % (n, len(r)))
+        raise SerializationTruncationError(
+            "Asked to read %i bytes, but only got %i" % (n, len(r))
+        )
     return r
 
 
@@ -116,8 +122,9 @@ class Serializable(object):
         if not allow_padding:
             padding = fd.read()
             if len(padding) != 0:
-                raise DeserializationExtraDataError('Not all bytes consumed during deserialization',
-                                                    r, padding)
+                raise DeserializationExtraDataError(
+                    "Not all bytes consumed during deserialization", r, padding
+                )
         return r
 
     def GetHash(self):
@@ -125,8 +132,9 @@ class Serializable(object):
         return Hash(self.serialize())
 
     def __eq__(self, other):
-        if (not isinstance(other, self.__class__) and
-            not isinstance(self, other.__class__)):
+        if not isinstance(other, self.__class__) and not isinstance(
+            self, other.__class__
+        ):
             return NotImplemented
         return self.serialize() == other.serialize()
 
@@ -136,16 +144,17 @@ class Serializable(object):
     def __hash__(self):
         return hash(self.serialize())
 
+
 class ImmutableSerializable(Serializable):
     """Immutable serializable object"""
 
-    __slots__ = ['_cached_GetHash', '_cached__hash__']
+    __slots__ = ["_cached_GetHash", "_cached__hash__"]
 
     def __setattr__(self, name, value):
-        raise AttributeError('Object is immutable')
+        raise AttributeError("Object is immutable")
 
     def __delattr__(self, name):
-        raise AttributeError('Object is immutable')
+        raise AttributeError("Object is immutable")
 
     def GetHash(self):
         """Return the hash of the serialized object"""
@@ -153,7 +162,7 @@ class ImmutableSerializable(Serializable):
             return self._cached_GetHash
         except AttributeError:
             _cached_GetHash = super(ImmutableSerializable, self).GetHash()
-            object.__setattr__(self, '_cached_GetHash', _cached_GetHash)
+            object.__setattr__(self, "_cached_GetHash", _cached_GetHash)
             return _cached_GetHash
 
     def __hash__(self):
@@ -161,11 +170,13 @@ class ImmutableSerializable(Serializable):
             return self._cached__hash__
         except AttributeError:
             _cached__hash__ = hash(self.serialize())
-            object.__setattr__(self, '_cached__hash__', _cached__hash__)
+            object.__setattr__(self, "_cached__hash__", _cached__hash__)
             return _cached__hash__
+
 
 class Serializer(object):
     """Base class for object serializers"""
+
     def __new__(cls):
         raise NotImplementedError
 
@@ -192,37 +203,39 @@ class Serializer(object):
 
 class VarIntSerializer(Serializer):
     """Serialization of variable length ints"""
+
     @classmethod
     def stream_serialize(cls, i, f):
         if i < 0:
-            raise ValueError('varint must be non-negative integer')
-        elif i < 0xfd:
+            raise ValueError("varint must be non-negative integer")
+        elif i < 0xFD:
             f.write(_bchr(i))
-        elif i <= 0xffff:
-            f.write(_bchr(0xfd))
-            f.write(struct.pack(b'<H', i))
-        elif i <= 0xffffffff:
-            f.write(_bchr(0xfe))
-            f.write(struct.pack(b'<I', i))
+        elif i <= 0xFFFF:
+            f.write(_bchr(0xFD))
+            f.write(struct.pack(b"<H", i))
+        elif i <= 0xFFFFFFFF:
+            f.write(_bchr(0xFE))
+            f.write(struct.pack(b"<I", i))
         else:
-            f.write(_bchr(0xff))
-            f.write(struct.pack(b'<Q', i))
+            f.write(_bchr(0xFF))
+            f.write(struct.pack(b"<Q", i))
 
     @classmethod
     def stream_deserialize(cls, f):
         r = _bord(ser_read(f, 1))
-        if r < 0xfd:
+        if r < 0xFD:
             return r
-        elif r == 0xfd:
-            return struct.unpack(b'<H', ser_read(f, 2))[0]
-        elif r == 0xfe:
-            return struct.unpack(b'<I', ser_read(f, 4))[0]
+        elif r == 0xFD:
+            return struct.unpack(b"<H", ser_read(f, 2))[0]
+        elif r == 0xFE:
+            return struct.unpack(b"<I", ser_read(f, 4))[0]
         else:
-            return struct.unpack(b'<Q', ser_read(f, 8))[0]
+            return struct.unpack(b"<Q", ser_read(f, 8))[0]
 
 
 class BytesSerializer(Serializer):
     """Serialization of bytes instances"""
+
     @classmethod
     def stream_serialize(cls, b, f):
         VarIntSerializer.stream_serialize(len(b), f)
@@ -258,6 +271,7 @@ class VectorSerializer(Serializer):
 
 class uint256VectorSerializer(Serializer):
     """Serialize vectors of uint256"""
+
     @classmethod
     def stream_serialize(cls, uints, f):
         VarIntSerializer.stream_serialize(len(uints), f)
@@ -275,7 +289,6 @@ class uint256VectorSerializer(Serializer):
 
 
 class intVectorSerializer(Serializer):
-
     @classmethod
     def stream_serialize(cls, ints, f):
         l = len(ints)
@@ -294,6 +307,7 @@ class intVectorSerializer(Serializer):
 
 class VarStringSerializer(Serializer):
     """Serialize variable length byte strings"""
+
     @classmethod
     def stream_serialize(cls, s, f):
         l = len(s)
@@ -327,6 +341,7 @@ def uint256_from_compact(c):
         v = (c & 0xFFFFFF) << (8 * (nbytes - 3))
     return v
 
+
 def compact_from_uint256(v):
     """Convert uint256 to compact encoding
     """
@@ -346,36 +361,39 @@ def compact_from_uint256(v):
 
     return compact | nbytes << 24
 
+
 def uint256_to_str(u):
     r = b""
     for i in range(8):
-        r += struct.pack('<I', u >> (i * 32) & 0xffffffff)
+        r += struct.pack("<I", u >> (i * 32) & 0xFFFFFFFF)
     return r
+
 
 def uint256_to_shortstr(u):
     s = "%064x" % (u,)
     return s[:16]
 
+
 __all__ = (
-        'MAX_SIZE',
-        'Hash',
-        'Hash160',
-        'SerializationError',
-        'SerializationTruncationError',
-        'DeserializationExtraDataError',
-        'ser_read',
-        'Serializable',
-        'ImmutableSerializable',
-        'Serializer',
-        'VarIntSerializer',
-        'BytesSerializer',
-        'VectorSerializer',
-        'uint256VectorSerializer',
-        'intVectorSerializer',
-        'VarStringSerializer',
-        'uint256_from_str',
-        'uint256_from_compact',
-        'compact_from_uint256',
-        'uint256_to_str',
-        'uint256_to_shortstr',
+    "MAX_SIZE",
+    "Hash",
+    "Hash160",
+    "SerializationError",
+    "SerializationTruncationError",
+    "DeserializationExtraDataError",
+    "ser_read",
+    "Serializable",
+    "ImmutableSerializable",
+    "Serializer",
+    "VarIntSerializer",
+    "BytesSerializer",
+    "VectorSerializer",
+    "uint256VectorSerializer",
+    "intVectorSerializer",
+    "VarStringSerializer",
+    "uint256_from_str",
+    "uint256_from_compact",
+    "compact_from_uint256",
+    "uint256_to_str",
+    "uint256_to_shortstr",
 )

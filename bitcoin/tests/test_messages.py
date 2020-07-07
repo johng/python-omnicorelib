@@ -11,13 +11,30 @@
 
 import unittest
 
-from bitcoin.messages import msg_version, msg_verack, msg_addr, msg_alert, \
-    msg_inv, msg_getdata, msg_getblocks, msg_getheaders, msg_headers, msg_tx, \
-    msg_block, msg_getaddr, msg_ping, msg_pong, msg_mempool, MsgSerializable, \
-    msg_notfound, msg_reject
+from bitcoin.messages import (
+    msg_version,
+    msg_verack,
+    msg_addr,
+    msg_alert,
+    msg_inv,
+    msg_getdata,
+    msg_getblocks,
+    msg_getheaders,
+    msg_headers,
+    msg_tx,
+    msg_block,
+    msg_getaddr,
+    msg_ping,
+    msg_pong,
+    msg_mempool,
+    MsgSerializable,
+    msg_notfound,
+    msg_reject,
+)
 
 import sys
-if sys.version > '3':
+
+if sys.version > "3":
     from io import BytesIO
 else:
     from cStringIO import StringIO as BytesIO
@@ -118,7 +135,9 @@ class Test_msg_mempool(MessageTestCase):
 
 
 class Test_messages(unittest.TestCase):
-    verackbytes = b'\xf9\xbe\xb4\xd9verack\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00]\xf6\xe0\xe2'
+    verackbytes = (
+        b"\xf9\xbe\xb4\xd9verack\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00]\xf6\xe0\xe2"
+    )
 
     def test_read_msg_verack(self):
         f = BytesIO(self.verackbytes)
@@ -126,7 +145,7 @@ class Test_messages(unittest.TestCase):
         self.assertEqual(m.command, msg_verack.command)
 
     def test_fail_invalid_message(self):
-        bad_verack_bytes = b'\xf8' + self.verackbytes[1:]
+        bad_verack_bytes = b"\xf8" + self.verackbytes[1:]
         f = BytesIO(bad_verack_bytes)
         with self.assertRaises(ValueError):
             MsgSerializable.stream_deserialize(f)

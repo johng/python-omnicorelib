@@ -14,22 +14,40 @@
 """Low-level example of how to spend a P2SH/BIP16 txout"""
 
 import sys
+
 if sys.version_info.major < 3:
-    sys.stderr.write('Sorry, Python 3.x required by this example.\n')
+    sys.stderr.write("Sorry, Python 3.x required by this example.\n")
     sys.exit(1)
 
 import hashlib
 
 from bitcoin import SelectParams
-from bitcoin.core import b2x, lx, COIN, COutPoint, CMutableTxOut, CMutableTxIn, CMutableTransaction, Hash160
-from bitcoin.core.script import CScript, OP_DUP, OP_HASH160, OP_EQUALVERIFY, OP_CHECKSIG, SignatureHash, SIGHASH_ALL
+from bitcoin.core import (
+    b2x,
+    lx,
+    COIN,
+    COutPoint,
+    CMutableTxOut,
+    CMutableTxIn,
+    CMutableTransaction,
+    Hash160,
+)
+from bitcoin.core.script import (
+    CScript,
+    OP_DUP,
+    OP_HASH160,
+    OP_EQUALVERIFY,
+    OP_CHECKSIG,
+    SignatureHash,
+    SIGHASH_ALL,
+)
 from bitcoin.core.scripteval import VerifyScript, SCRIPT_VERIFY_P2SH
 from bitcoin.wallet import CBitcoinAddress, CBitcoinSecret
 
-SelectParams('mainnet')
+SelectParams("mainnet")
 
 # Create the (in)famous correct brainwallet secret key.
-h = hashlib.sha256(b'correct horse battery staple').digest()
+h = hashlib.sha256(b"correct horse battery staple").digest()
 seckey = CBitcoinSecret.from_secret_bytes(h)
 
 # Create a redeemScript. Similar to a scriptPubKey the redeemScript must be
@@ -46,7 +64,7 @@ txin_scriptPubKey = txin_redeemScript.to_p2sh_scriptPubKey()
 # Convert the P2SH scriptPubKey to a base58 Bitcoin address and print it.
 # You'll need to send some funds to it to create a txout to spend.
 txin_p2sh_address = CBitcoinAddress.from_scriptPubKey(txin_scriptPubKey)
-print('Pay to:',str(txin_p2sh_address))
+print("Pay to:", str(txin_p2sh_address))
 
 # Same as the txid:vout the createrawtransaction RPC call requires
 #
@@ -54,7 +72,7 @@ print('Pay to:',str(txin_p2sh_address))
 # transaction hashes are shown little-endian rather than the usual big-endian.
 # There's also a corresponding x() convenience function that takes big-endian
 # hex and converts it to bytes.
-txid = lx('bff785da9f8169f49be92fa95e31f0890c385bfb1bd24d6b94d7900057c617ae')
+txid = lx("bff785da9f8169f49be92fa95e31f0890c385bfb1bd24d6b94d7900057c617ae")
 vout = 0
 
 # Create the txin structure, which includes the outpoint. The scriptSig
@@ -63,7 +81,10 @@ txin = CMutableTxIn(COutPoint(txid, vout))
 
 # Create the txout. This time we create the scriptPubKey from a Bitcoin
 # address.
-txout = CMutableTxOut(0.0005*COIN, CBitcoinAddress('323uf9MgLaSn9T7vDaK1cGAZ2qpvYUuqSp').to_scriptPubKey())
+txout = CMutableTxOut(
+    0.0005 * COIN,
+    CBitcoinAddress("323uf9MgLaSn9T7vDaK1cGAZ2qpvYUuqSp").to_scriptPubKey(),
+)
 
 # Create the unsigned transaction.
 tx = CMutableTransaction([txin], [txout])

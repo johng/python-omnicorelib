@@ -15,11 +15,11 @@ import struct
 import socket
 
 from bitcoin.core.serialize import (
-        Serializable,
-        VarStringSerializer,
-        intVectorSerializer,
-        ser_read,
-        uint256VectorSerializer,
+    Serializable,
+    VarStringSerializer,
+    intVectorSerializer,
+    ser_read,
+    uint256VectorSerializer,
 )
 from bitcoin.core import b2lx
 
@@ -46,9 +46,9 @@ class CAddress(Serializable):
 
         packedIP = ser_read(f, 16)
 
-        if bytes(packedIP[0:12]) == IPV4_COMPAT: # IPv4
+        if bytes(packedIP[0:12]) == IPV4_COMPAT:  # IPv4
             c.ip = socket.inet_ntop(socket.AF_INET, packedIP[12:16])
-        else: #IPv6
+        else:  # IPv6
             c.ip = socket.inet_ntop(socket.AF_INET6, packedIP)
 
         c.port = struct.unpack(b">H", ser_read(f, 2))[0]
@@ -59,7 +59,7 @@ class CAddress(Serializable):
             f.write(struct.pack(b"<I", self.nTime))
         f.write(struct.pack(b"<Q", self.nServices))
 
-        if ":" in self.ip: # determine if address is IPv6
+        if ":" in self.ip:  # determine if address is IPv6
             f.write(socket.inet_pton(socket.AF_INET6, self.ip))
         else:
             f.write(self.pchReserved)
@@ -68,16 +68,16 @@ class CAddress(Serializable):
         f.write(struct.pack(b">H", self.port))
 
     def __repr__(self):
-        return "CAddress(nTime=%d nServices=%i ip=%s port=%i)" % (self.nTime, self.nServices, self.ip, self.port)
+        return "CAddress(nTime=%d nServices=%i ip=%s port=%i)" % (
+            self.nTime,
+            self.nServices,
+            self.ip,
+            self.port,
+        )
 
 
 class CInv(Serializable):
-    typemap = {
-        0: "Error",
-        1: "TX",
-        2: "Block",
-        3: "FilteredBlock",
-        4: "CompactBlock"}
+    typemap = {0: "Error", 1: "TX", 2: "Block", 3: "FilteredBlock", 4: "CompactBlock"}
 
     def __init__(self):
         self.type = 0
@@ -137,16 +137,16 @@ class CUnsignedAlert(Serializable):
     @classmethod
     def stream_deserialize(cls, f):
         c = cls()
-        c.nVersion = struct.unpack(b"<i", ser_read(f,4))[0]
-        c.nRelayUntil = struct.unpack(b"<q", ser_read(f,8))[0]
-        c.nExpiration = struct.unpack(b"<q", ser_read(f,8))[0]
-        c.nID = struct.unpack(b"<i", ser_read(f,4))[0]
-        c.nCancel = struct.unpack(b"<i", ser_read(f,4))[0]
+        c.nVersion = struct.unpack(b"<i", ser_read(f, 4))[0]
+        c.nRelayUntil = struct.unpack(b"<q", ser_read(f, 8))[0]
+        c.nExpiration = struct.unpack(b"<q", ser_read(f, 8))[0]
+        c.nID = struct.unpack(b"<i", ser_read(f, 4))[0]
+        c.nCancel = struct.unpack(b"<i", ser_read(f, 4))[0]
         c.setCancel = intVectorSerializer.deserialize(f)
-        c.nMinVer = struct.unpack(b"<i", ser_read(f,4))[0]
-        c.nMaxVer = struct.unpack(b"<i", ser_read(f,4))[0]
+        c.nMinVer = struct.unpack(b"<i", ser_read(f, 4))[0]
+        c.nMaxVer = struct.unpack(b"<i", ser_read(f, 4))[0]
         c.setSubVer = intVectorSerializer.deserialize(f)
-        c.nPriority = struct.unpack(b"<i", ser_read(f,4))[0]
+        c.nPriority = struct.unpack(b"<i", ser_read(f, 4))[0]
         c.strComment = VarStringSerializer.deserialize(f)
         c.strStatusBar = VarStringSerializer.deserialize(f)
         c.strReserved = VarStringSerializer.deserialize(f)
@@ -168,7 +168,22 @@ class CUnsignedAlert(Serializable):
         f.write(VarStringSerializer.serialize(self.strReserved))
 
     def __repr__(self):
-        return "CUnsignedAlert(nVersion %d, nRelayUntil %d, nExpiration %d, nID %d, nCancel %d, nMinVer %d, nMaxVer %d, nPriority %d, strComment %s, strStatusBar %s, strReserved %s)" % (self.nVersion, self.nRelayUntil, self.nExpiration, self.nID, self.nCancel, self.nMinVer, self.nMaxVer, self.nPriority, self.strComment, self.strStatusBar, self.strReserved)
+        return (
+            "CUnsignedAlert(nVersion %d, nRelayUntil %d, nExpiration %d, nID %d, nCancel %d, nMinVer %d, nMaxVer %d, nPriority %d, strComment %s, strStatusBar %s, strReserved %s)"
+            % (
+                self.nVersion,
+                self.nRelayUntil,
+                self.nExpiration,
+                self.nID,
+                self.nCancel,
+                self.nMinVer,
+                self.nMaxVer,
+                self.nPriority,
+                self.strComment,
+                self.strStatusBar,
+                self.strReserved,
+            )
+        )
 
 
 class CAlert(Serializable):
@@ -188,14 +203,18 @@ class CAlert(Serializable):
         VarStringSerializer.stream_serialize(self.vchSig, f)
 
     def __repr__(self):
-        return "CAlert(vchMsg.sz %d, vchSig.sz %d)" % (len(self.vchMsg), len(self.vchSig))
+        return "CAlert(vchMsg.sz %d, vchSig.sz %d)" % (
+            len(self.vchMsg),
+            len(self.vchSig),
+        )
+
 
 __all__ = (
-        'PROTO_VERSION',
-        'CADDR_TIME_VERSION',
-        'CAddress',
-        'CInv',
-        'CBlockLocator',
-        'CUnsignedAlert',
-        'CAlert',
+    "PROTO_VERSION",
+    "CADDR_TIME_VERSION",
+    "CAddress",
+    "CInv",
+    "CBlockLocator",
+    "CUnsignedAlert",
+    "CAlert",
 )

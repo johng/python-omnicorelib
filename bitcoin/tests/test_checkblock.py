@@ -17,8 +17,9 @@ import os
 
 from bitcoin.core import *
 
+
 def load_test_vectors(name):
-    with open(os.path.dirname(__file__) + '/data/' + name, 'r') as fd:
+    with open(os.path.dirname(__file__) + "/data/" + name, "r") as fd:
         for test_case in json.load(fd):
             # Comments designated by single length strings
             if len(test_case) == 1:
@@ -38,7 +39,9 @@ def load_test_vectors(name):
 
 class Test_CheckBlock(unittest.TestCase):
     def test_checkblock_valid(self):
-        for comment, fHeader, fCheckPoW, cur_time, blk in load_test_vectors('checkblock_valid.json'):
+        for comment, fHeader, fCheckPoW, cur_time, blk in load_test_vectors(
+            "checkblock_valid.json"
+        ):
             try:
                 if fHeader:
                     CheckBlockHeader(blk, fCheckPoW=fCheckPoW, cur_time=cur_time)
@@ -48,7 +51,9 @@ class Test_CheckBlock(unittest.TestCase):
                 self.fail('Failed "%s" with error %r' % (comment, err))
 
     def test_checkblock_invalid(self):
-        for comment, fHeader, fCheckPoW, cur_time, blk in load_test_vectors('checkblock_invalid.json'):
+        for comment, fHeader, fCheckPoW, cur_time, blk in load_test_vectors(
+            "checkblock_invalid.json"
+        ):
             try:
                 if fHeader:
                     CheckBlockHeader(blk, fCheckPoW=fCheckPoW, cur_time=cur_time)

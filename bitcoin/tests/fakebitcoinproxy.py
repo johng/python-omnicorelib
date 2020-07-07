@@ -20,19 +20,14 @@ import hashlib
 from bitcoin.core import (
     # bytes to hex (see x)
     b2x,
-
     # convert hex string to bytes (see b2x)
     x,
-
     # convert little-endian hex string to bytes (see b2lx)
     lx,
-
     # convert bytes to little-endian hex string (see lx)
     b2lx,
-
     # number of satoshis per bitcoin
     COIN,
-
     # a type for a transaction that isn't finished building
     CMutableTransaction,
     CMutableTxIn,
@@ -44,13 +39,12 @@ from bitcoin.core import (
 from bitcoin.wallet import (
     # bitcoin address initialized from base58-encoded string
     CBitcoinAddress,
-
     # base58-encoded secret key
     CBitcoinSecret,
-
     # has a nifty function from_pubkey
     P2PKHBitcoinAddress,
 )
+
 
 def make_address_from_passphrase(passphrase, compressed=True, as_str=True):
     """
@@ -60,12 +54,15 @@ def make_address_from_passphrase(passphrase, compressed=True, as_str=True):
     if not isinstance(passphrase, bytes):
         passphrase = bytes(passphrase, "utf-8")
     passphrasehash = hashlib.sha256(passphrase).digest()
-    private_key = CBitcoinSecret.from_secret_bytes(passphrasehash, compressed=compressed)
+    private_key = CBitcoinSecret.from_secret_bytes(
+        passphrasehash, compressed=compressed
+    )
     address = P2PKHBitcoinAddress.from_pubkey(private_key.pub)
     if as_str:
         return str(address)
     else:
         return address
+
 
 def make_txout(amount=None, address=None, counter=None):
     """
@@ -77,19 +74,24 @@ def make_txout(amount=None, address=None, counter=None):
     passphrase_template = "correct horse battery staple txout {counter}"
 
     if not counter:
-        counter = random.randrange(0, 2**50)
+        counter = random.randrange(0, 2 ** 50)
 
     if not address:
         passphrase = passphrase_template.format(counter=counter)
         address = make_address_from_passphrase(bytes(passphrase, "utf-8"))
 
     if not amount:
-        maxsatoshis = (21 * 1000 * 1000) * (100 * 1000 * 1000) # 21 million BTC * 100 million satoshi per BTC
-        amount = random.randrange(0, maxsatoshis) # between 0 satoshi and 21 million BTC
+        maxsatoshis = (21 * 1000 * 1000) * (
+            100 * 1000 * 1000
+        )  # 21 million BTC * 100 million satoshi per BTC
+        amount = random.randrange(
+            0, maxsatoshis
+        )  # between 0 satoshi and 21 million BTC
 
     txout = CMutableTxOut(amount, CBitcoinAddress(address).to_scriptPubKey())
 
     return txout
+
 
 def make_blocks_from_blockhashes(blockhashes):
     """
@@ -107,6 +109,7 @@ def make_blocks_from_blockhashes(blockhashes):
 
     return blocks
 
+
 def make_rpc_batch_request_entry(rpc_name, params):
     """
     Construct an entry for the list of commands that will be passed as a batch
@@ -119,11 +122,14 @@ def make_rpc_batch_request_entry(rpc_name, params):
         "params": params,
     }
 
+
 class FakeBitcoinProxyException(Exception):
     """
     Incorrect usage of fake proxy.
     """
+
     pass
+
 
 class FakeBitcoinProxy(object):
     """
@@ -132,7 +138,14 @@ class FakeBitcoinProxy(object):
     by calling various "RPC" methods.
     """
 
-    def __init__(self, blocks=None, transactions=None, getnewaddress_offset=None, getnewaddress_passphrase_template="getnewaddress passphrase template {}", num_fundrawtransaction_inputs=5):
+    def __init__(
+        self,
+        blocks=None,
+        transactions=None,
+        getnewaddress_offset=None,
+        getnewaddress_passphrase_template="getnewaddress passphrase template {}",
+        num_fundrawtransaction_inputs=5,
+    ):
         """
         :param getnewaddress_offset: a number to start using and incrementing
         in template used by getnewaddress.
@@ -221,7 +234,9 @@ class FakeBitcoinProxy(object):
         Construct a new address based on a passphrase template. As more
         addresses are generated, the template value goes up.
         """
-        passphrase = self._getnewaddress_passphrase_template.format(self._getnewaddress_offset)
+        passphrase = self._getnewaddress_passphrase_template.format(
+            self._getnewaddress_offset
+        )
         address = make_address_from_passphrase(bytes(passphrase, "utf-8"))
         self._getnewaddress_offset += 1
         return CBitcoinAddress(address)
@@ -309,7 +324,11 @@ class FakeBitcoinProxy(object):
             # assert presence of important details
             for necessary_key in necessary_keys:
                 if not necessary_key in request.keys():
-                    raise FakeBitcoinProxyException("Missing necessary key {} for _batch request number {}".format(necessary_key, idx))
+                    raise FakeBitcoinProxyException(
+                        "Missing necessary key {} for _batch request number {}".format(
+                            necessary_key, idx
+                        )
+                    )
 
             if isinstance(request["params"], list):
                 method = getattr(self, request["method"])
@@ -318,10 +337,8 @@ class FakeBitcoinProxy(object):
                 # matches error message received through python-bitcoinrpc
                 error = {"message": "Params must be an array", "code": -32600}
 
-            results.append({
-                "error": error,
-                "id": request["id"],
-                "result": result,
-            })
+            results.append(
+                {"error": error, "id": request["id"], "result": result,}
+            )
 
         return results

@@ -9,19 +9,14 @@ from copy import copy
 from bitcoin.core import (
     # bytes to hex (see x)
     b2x,
-
     # convert hex string to bytes (see b2x)
     x,
-
     # convert little-endian hex string to bytes (see b2lx)
     lx,
-
     # convert bytes to little-endian hex string (see lx)
     b2lx,
-
     # number of satoshis per bitcoin
     COIN,
-
     # a type for a transaction that isn't finished building
     CMutableTransaction,
     CMutableTxIn,
@@ -40,9 +35,9 @@ from bitcoin.tests.fakebitcoinproxy import (
     make_txout,
     make_blocks_from_blockhashes,
     make_rpc_batch_request_entry,
-
     # TODO: import and test with FakeBitcoinProxyException
 )
+
 
 class FakeBitcoinProxyTestCase(unittest.TestCase):
     def test_constructor(self):
@@ -225,7 +220,9 @@ class FakeBitcoinProxyTestCase(unittest.TestCase):
         proxy.importaddress(address, label, rescan)
 
     def test_fundrawtransaction(self):
-        unfunded_transaction = CMutableTransaction([], [make_txout() for x in range(0, 5)])
+        unfunded_transaction = CMutableTransaction(
+            [], [make_txout() for x in range(0, 5)]
+        )
         proxy = FakeBitcoinProxy()
 
         funded_transaction_hex = proxy.fundrawtransaction(unfunded_transaction)["hex"]
@@ -238,10 +235,14 @@ class FakeBitcoinProxyTestCase(unittest.TestCase):
         self.assertEqual(type(funded_transaction.vin[0]), CTxIn)
 
     def test_fundrawtransaction_hex_hash(self):
-        unfunded_transaction = CMutableTransaction([], [make_txout() for x in range(0, 5)])
+        unfunded_transaction = CMutableTransaction(
+            [], [make_txout() for x in range(0, 5)]
+        )
         proxy = FakeBitcoinProxy()
 
-        funded_transaction_hex = proxy.fundrawtransaction(b2x(unfunded_transaction.serialize()))["hex"]
+        funded_transaction_hex = proxy.fundrawtransaction(
+            b2x(unfunded_transaction.serialize())
+        )["hex"]
         funded_transaction = CMutableTransaction.deserialize(x(funded_transaction_hex))
 
         self.assertTrue(unfunded_transaction is not funded_transaction)
@@ -252,10 +253,14 @@ class FakeBitcoinProxyTestCase(unittest.TestCase):
 
     def test_fundrawtransaction_adds_output(self):
         num_outputs = 5
-        unfunded_transaction = CMutableTransaction([], [make_txout() for x in range(0, num_outputs)])
+        unfunded_transaction = CMutableTransaction(
+            [], [make_txout() for x in range(0, num_outputs)]
+        )
         proxy = FakeBitcoinProxy()
 
-        funded_transaction_hex = proxy.fundrawtransaction(b2x(unfunded_transaction.serialize()))["hex"]
+        funded_transaction_hex = proxy.fundrawtransaction(
+            b2x(unfunded_transaction.serialize())
+        )["hex"]
         funded_transaction = CMutableTransaction.deserialize(x(funded_transaction_hex))
 
         self.assertTrue(len(funded_transaction.vout) > num_outputs)
@@ -263,7 +268,9 @@ class FakeBitcoinProxyTestCase(unittest.TestCase):
 
     def test_signrawtransaction(self):
         num_outputs = 5
-        given_transaction = CMutableTransaction([], [make_txout() for x in range(0, num_outputs)])
+        given_transaction = CMutableTransaction(
+            [], [make_txout() for x in range(0, num_outputs)]
+        )
         proxy = FakeBitcoinProxy()
 
         result = proxy.signrawtransaction(given_transaction)
@@ -278,11 +285,16 @@ class FakeBitcoinProxyTestCase(unittest.TestCase):
         self.assertTrue(result_transaction.vin is not given_transaction.vin)
         self.assertTrue(result_transaction.vout is not given_transaction.vout)
         self.assertEqual(len(result_transaction.vout), len(given_transaction.vout))
-        self.assertEqual(result_transaction.vout[0].scriptPubKey, given_transaction.vout[0].scriptPubKey)
+        self.assertEqual(
+            result_transaction.vout[0].scriptPubKey,
+            given_transaction.vout[0].scriptPubKey,
+        )
 
     def test_sendrawtransaction(self):
         num_outputs = 5
-        given_transaction = CMutableTransaction([], [make_txout() for x in range(0, num_outputs)])
+        given_transaction = CMutableTransaction(
+            [], [make_txout() for x in range(0, num_outputs)]
+        )
         expected_txid = b2lx(given_transaction.GetHash())
         given_transaction_hex = b2x(given_transaction.serialize())
         proxy = FakeBitcoinProxy()
@@ -291,7 +303,7 @@ class FakeBitcoinProxyTestCase(unittest.TestCase):
 
     def test__batch_empty_list_input(self):
         requests = []
-        self.assertEqual(len(requests), 0) # must be empty for test
+        self.assertEqual(len(requests), 0)  # must be empty for test
         proxy = FakeBitcoinProxy()
         results = proxy._batch(requests)
         self.assertEqual(type(results), list)
@@ -323,7 +335,9 @@ class FakeBitcoinProxyTestCase(unittest.TestCase):
         requests = [request]
         results = proxy._batch(requests)
         result = results[0]
-        self.assertTrue(all([expected_key in result.keys() for expected_key in expected_keys]))
+        self.assertTrue(
+            all([expected_key in result.keys() for expected_key in expected_keys])
+        )
 
     def test__batch_result_error_is_none(self):
         proxy = FakeBitcoinProxy()
@@ -356,7 +370,9 @@ class FakeBitcoinProxyTestCase(unittest.TestCase):
 
         previous_blockhash = None
         for counter in range(0, block_count):
-            blockhash = "00008c0c84aee66413f1e8ff95fdca5e8ebf35c94b090290077cdcea649{}".format(counter)
+            blockhash = "00008c0c84aee66413f1e8ff95fdca5e8ebf35c94b090290077cdcea649{}".format(
+                counter
+            )
             block_data = {
                 "hash": blockhash,
             }
@@ -372,7 +388,7 @@ class FakeBitcoinProxyTestCase(unittest.TestCase):
         self.assertEqual(count, len(blocks) - 1)
 
         requests = []
-        for counter in range(0, count + 1): # from 0 to len(blocks)
+        for counter in range(0, count + 1):  # from 0 to len(blocks)
             request = make_rpc_batch_request_entry("getblockhash", [counter])
             requests.append(request)
 
@@ -384,7 +400,9 @@ class FakeBitcoinProxyTestCase(unittest.TestCase):
         for (counter, result) in enumerate(results):
             self.assertEqual(result["error"], None)
 
-            expected_blockhash = "00008c0c84aee66413f1e8ff95fdca5e8ebf35c94b090290077cdcea649{}".format(counter)
+            expected_blockhash = "00008c0c84aee66413f1e8ff95fdca5e8ebf35c94b090290077cdcea649{}".format(
+                counter
+            )
             self.assertEqual(result["result"], expected_blockhash)
 
     def test_make_blocks_from_blockhashes(self):
@@ -398,9 +416,13 @@ class FakeBitcoinProxyTestCase(unittest.TestCase):
         self.assertTrue(all(["height" in block.keys() for block in blocks]))
         self.assertTrue(all(["tx" in block.keys() for block in blocks]))
         self.assertNotIn("previousblockhash", blocks[0].keys())
-        self.assertTrue(all(["previousblockhash" in block.keys() for block in blocks[1:]]))
+        self.assertTrue(
+            all(["previousblockhash" in block.keys() for block in blocks[1:]])
+        )
         self.assertEqual(blocks[-1]["previousblockhash"], blocks[-2]["hash"])
-        self.assertEqual(sorted([block["hash"] for block in blocks]), sorted(blockhashes))
+        self.assertEqual(
+            sorted([block["hash"] for block in blocks]), sorted(blockhashes)
+        )
 
     def test_make_blocks_from_blockhashes_empty(self):
         blockhashes = []
@@ -415,6 +437,7 @@ class FakeBitcoinProxyTestCase(unittest.TestCase):
 
         # and because paranoia
         self.assertTrue(blockhashes is not blocks)
+
 
 if __name__ == "__main__":
     unittest.main()

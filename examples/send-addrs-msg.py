@@ -7,7 +7,8 @@ from bitcoin.net import CAddress
 
 PORT = 18333
 
-bitcoin.SelectParams('testnet') 
+bitcoin.SelectParams("testnet")
+
 
 def version_pkt(client_ip, server_ip):
     msg = msg_version()
@@ -19,7 +20,8 @@ def version_pkt(client_ip, server_ip):
 
     return msg
 
-def addr_pkt( str_addrs ):
+
+def addr_pkt(str_addrs):
     msg = msg_addr()
     addrs = []
     for i in str_addrs:
@@ -28,32 +30,33 @@ def addr_pkt( str_addrs ):
         addr.nTime = int(time.time())
         addr.ip = i
 
-        addrs.append( addr )
+        addrs.append(addr)
     msg.addrs = addrs
     return msg
+
 
 s = socket.socket()
 
 server_ip = "192.168.0.149"
 client_ip = "192.168.0.13"
 
-s.connect( (server_ip,PORT) )
+s.connect((server_ip, PORT))
 
 # Send Version packet
-s.send( version_pkt(client_ip, server_ip).to_bytes() )
+s.send(version_pkt(client_ip, server_ip).to_bytes())
 
 # Get Version reply
 print(s.recv(1924))
 
 # Send Verack
-s.send( msg_verack().to_bytes() )
+s.send(msg_verack().to_bytes())
 # Get Verack
 print(s.recv(1024))
 
 # Send Addrs
-s.send( addr_pkt(["252.11.1.2", "EEEE:7777:8888:AAAA::1"]).to_bytes() )
+s.send(addr_pkt(["252.11.1.2", "EEEE:7777:8888:AAAA::1"]).to_bytes())
 
-time.sleep(1) 
+time.sleep(1)
 s.close()
 
 # debug log on the server should look like:
@@ -62,5 +65,3 @@ s.close()
 # receive version message: /pythonbitcoin0.0.1/: version 70002, blocks=-1, us=192.168.0.149:18333, them=192.168.0.13:18333, peer=192.168.0.13:39979
 # Added 2 addresses from 192.168.0.13: 3 tried, 1706 new
 # disconnecting node 192.168.0.13:39979
-
-

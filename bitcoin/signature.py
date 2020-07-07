@@ -16,19 +16,19 @@ from bitcoin.core.serialize import *
 # Py3 compatibility
 import sys
 
-if sys.version > '3':
+if sys.version > "3":
     from io import BytesIO as _BytesIO
 else:
     from cStringIO import StringIO as _BytesIO
 
 
 class DERSignature(ImmutableSerializable):
-    __slots__ = ['length', 'r', 's']
+    __slots__ = ["length", "r", "s"]
 
     def __init__(self, r, s, length):
-        object.__setattr__(self, 'r', r)
-        object.__setattr__(self, 's', s)
-        object.__setattr__(self, 'length', length)
+        object.__setattr__(self, "r", r)
+        object.__setattr__(self, "s", s)
+        object.__setattr__(self, "length", length)
 
     @classmethod
     def stream_deserialize(cls, f):
@@ -49,9 +49,7 @@ class DERSignature(ImmutableSerializable):
         BytesSerializer.stream_serialize(self.s, f)
 
     def __repr__(self):
-        return 'DERSignature(%s, %s)' % (self.r, self.s)
+        return "DERSignature(%s, %s)" % (self.r, self.s)
 
 
-__all__ = (
-    'DERSignature',
-)
+__all__ = ("DERSignature",)

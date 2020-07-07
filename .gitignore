@@ -9,3 +9,4 @@ build/
 htmlcov/
 python_bitcoinlib.egg-info/
 dist/
+/venv/

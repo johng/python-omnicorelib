@@ -16,7 +16,7 @@ from bitcoin.net import CAddress, CAlert, CUnsignedAlert, CInv
 # Py3 compatibility
 import sys
 
-if sys.version > '3':
+if sys.version > "3":
     from io import BytesIO as _BytesIO
 else:
     from cStringIO import StringIO as _BytesIO

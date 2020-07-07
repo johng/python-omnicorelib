@@ -14,6 +14,7 @@
 """Low-level example of how to spend a P2WPKH output."""
 
 import sys
+
 if sys.version_info.major < 3:
     sys.stderr.write("Sorry, Python 3.x required by this example.\n")
     sys.exit(1)
@@ -21,8 +22,27 @@ if sys.version_info.major < 3:
 import hashlib
 
 from bitcoin import SelectParams
-from bitcoin.core import b2x, b2lx, lx, COIN, COutPoint, CTxOut, CTxIn, CTxInWitness, CTxWitness, CScriptWitness, CMutableTransaction, Hash160
-from bitcoin.core.script import CScript, OP_0, SignatureHash, SIGHASH_ALL, SIGVERSION_WITNESS_V0
+from bitcoin.core import (
+    b2x,
+    b2lx,
+    lx,
+    COIN,
+    COutPoint,
+    CTxOut,
+    CTxIn,
+    CTxInWitness,
+    CTxWitness,
+    CScriptWitness,
+    CMutableTransaction,
+    Hash160,
+)
+from bitcoin.core.script import (
+    CScript,
+    OP_0,
+    SignatureHash,
+    SIGHASH_ALL,
+    SIGVERSION_WITNESS_V0,
+)
 from bitcoin.wallet import CBitcoinSecret, P2WPKHBitcoinAddress
 from bitcoin.rpc import Proxy
 
@@ -35,7 +55,7 @@ if connection._call("getblockchaininfo")["chain"] != "regtest":
 
 
 # Create the (in)famous correct brainwallet secret key.
-h = hashlib.sha256(b'correct horse battery staple').digest()
+h = hashlib.sha256(b"correct horse battery staple").digest()
 seckey = CBitcoinSecret.from_secret_bytes(h)
 
 # Create an address from that private key.
@@ -47,7 +67,9 @@ address = P2WPKHBitcoinAddress.from_scriptPubKey(scriptPubKey)
 connection._call("importprivkey", str(seckey))
 
 # Check if there's any funds available.
-unspentness = lambda: connection._call("listunspent", 6, 9999, [str(address)], True, {"minimumAmount": 1.0})
+unspentness = lambda: connection._call(
+    "listunspent", 6, 9999, [str(address)], True, {"minimumAmount": 1.0}
+)
 unspents = unspentness()
 while len(unspents) == 0:
     # mine some funds into the address
@@ -65,7 +87,9 @@ amount = int(float(unspent_utxo_details["amount"]) * COIN)
 amount_less_fee = int(amount - (0.01 * COIN))
 
 # Create a destination to send the coins.
-destination_address = connection._call("getnewaddress", "python-bitcoinlib-example", "bech32")
+destination_address = connection._call(
+    "getnewaddress", "python-bitcoinlib-example", "bech32"
+)
 destination_address = P2WPKHBitcoinAddress(destination_address)
 target_scriptPubKey = destination_address.to_scriptPubKey()
 
@@ -83,7 +107,14 @@ redeem_script = address.to_redeemScript()
 
 # Calculate the signature hash for the transaction. This is then signed by the
 # private key that controls the UTXO being spent here at this txin_index.
-sighash = SignatureHash(redeem_script, tx, txin_index, SIGHASH_ALL, amount=amount, sigversion=SIGVERSION_WITNESS_V0)
+sighash = SignatureHash(
+    redeem_script,
+    tx,
+    txin_index,
+    SIGHASH_ALL,
+    amount=amount,
+    sigversion=SIGVERSION_WITNESS_V0,
+)
 signature = seckey.sign(sighash) + bytes([SIGHASH_ALL])
 
 # Construct a witness for this transaction input. The public key is given in

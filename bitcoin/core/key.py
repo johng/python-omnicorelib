@@ -25,15 +25,15 @@ import bitcoin.signature
 
 _bchr = chr
 _bord = ord
-if sys.version > '3':
+if sys.version > "3":
     _bchr = lambda x: bytes([x])
     _bord = lambda x: x
 
 import bitcoin.core.script
 
-_ssl = ctypes.cdll.LoadLibrary(ctypes.util.find_library('ssl') or 'libeay32')
+_ssl = ctypes.cdll.LoadLibrary(ctypes.util.find_library("ssl") or "libeay32")
 
-_libsecp256k1_path = ctypes.util.find_library('secp256k1')
+_libsecp256k1_path = ctypes.util.find_library("secp256k1")
 _libsecp256k1_enable_signing = False
 _libsecp256k1_context = None
 _libsecp256k1 = None
@@ -42,9 +42,10 @@ _libsecp256k1 = None
 class OpenSSLException(EnvironmentError):
     pass
 
+
 # Thx to Sam Devlin for the ctypes magic 64-bit fix (FIXME: should this
 # be applied to every OpenSSL call whose return type is a pointer?)
-def _check_res_void_p(val, func, args): # pylint: disable=unused-argument
+def _check_res_void_p(val, func, args):  # pylint: disable=unused-argument
     if val == 0:
         errno = _ssl.ERR_get_error()
         errmsg = ctypes.create_string_buffer(120)
@@ -52,6 +53,7 @@ def _check_res_void_p(val, func, args): # pylint: disable=unused-argument
         raise OpenSSLException(errno, str(errmsg.value))
 
     return ctypes.c_void_p(val)
+
 
 _ssl.BN_add.restype = ctypes.c_int
 _ssl.BN_add.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p]
@@ -69,13 +71,30 @@ _ssl.BN_free.restype = None
 _ssl.BN_free.argtypes = [ctypes.c_void_p]
 
 _ssl.BN_mod_inverse.restype = ctypes.c_void_p
-_ssl.BN_mod_inverse.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p]
+_ssl.BN_mod_inverse.argtypes = [
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+]
 
 _ssl.BN_mod_mul.restype = ctypes.c_int
-_ssl.BN_mod_mul.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p]
+_ssl.BN_mod_mul.argtypes = [
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+]
 
 _ssl.BN_mod_sub.restype = ctypes.c_int
-_ssl.BN_mod_sub.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p]
+_ssl.BN_mod_sub.argtypes = [
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+]
 
 _ssl.BN_mul_word.restype = ctypes.c_int
 _ssl.BN_mul_word.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
@@ -107,7 +126,13 @@ _ssl.BN_CTX_new.restype = ctypes.c_void_p
 _ssl.BN_CTX_new.argtypes = []
 
 _ssl.EC_GROUP_get_curve_GFp.restype = ctypes.c_int
-_ssl.EC_GROUP_get_curve_GFp.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p]
+_ssl.EC_GROUP_get_curve_GFp.argtypes = [
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+]
 
 _ssl.EC_GROUP_get_degree.restype = ctypes.c_int
 _ssl.EC_GROUP_get_degree.argtypes = [ctypes.c_void_p]
@@ -148,25 +173,57 @@ _ssl.EC_POINT_new.restype = ctypes.c_void_p
 _ssl.EC_POINT_new.argtypes = [ctypes.c_void_p]
 
 _ssl.EC_POINT_mul.restype = ctypes.c_int
-_ssl.EC_POINT_mul.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p]
+_ssl.EC_POINT_mul.argtypes = [
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+]
 
 _ssl.EC_POINT_set_compressed_coordinates_GFp.restype = ctypes.c_int
-_ssl.EC_POINT_set_compressed_coordinates_GFp.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int, ctypes.c_void_p]
+_ssl.EC_POINT_set_compressed_coordinates_GFp.argtypes = [
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_int,
+    ctypes.c_void_p,
+]
 
 _ssl.ECDSA_sign.restype = ctypes.c_int
-_ssl.ECDSA_sign.argtypes = [ctypes.c_int, ctypes.c_void_p, ctypes.c_int, ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p]
+_ssl.ECDSA_sign.argtypes = [
+    ctypes.c_int,
+    ctypes.c_void_p,
+    ctypes.c_int,
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+]
 
 _ssl.ECDSA_size.restype = ctypes.c_int
 _ssl.ECDSA_size.argtypes = [ctypes.c_void_p]
 
 _ssl.ECDSA_verify.restype = ctypes.c_int
-_ssl.ECDSA_verify.argtypes = [ctypes.c_int, ctypes.c_void_p, ctypes.c_int, ctypes.c_void_p, ctypes.c_int, ctypes.c_void_p]
+_ssl.ECDSA_verify.argtypes = [
+    ctypes.c_int,
+    ctypes.c_void_p,
+    ctypes.c_int,
+    ctypes.c_void_p,
+    ctypes.c_int,
+    ctypes.c_void_p,
+]
 
 _ssl.ECDSA_SIG_free.restype = None
 _ssl.ECDSA_SIG_free.argtypes = [ctypes.c_void_p]
 
 _ssl.ECDH_compute_key.restype = ctypes.c_int
-_ssl.ECDH_compute_key.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_void_p, ctypes.c_void_p]
+_ssl.ECDH_compute_key.argtypes = [
+    ctypes.c_void_p,
+    ctypes.c_int,
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+]
 
 _ssl.ERR_error_string_n.restype = None
 _ssl.ERR_error_string_n.argtypes = [ctypes.c_ulong, ctypes.c_char_p, ctypes.c_size_t]
@@ -197,15 +254,14 @@ _ssl.BN_num_bits.argtypes = [ctypes.c_void_p]
 _ssl.EC_KEY_get0_private_key.restype = ctypes.c_void_p
 
 # this specifies the curve used with ECDSA.
-_NID_secp256k1 = 714 # from openssl/obj_mac.h
+_NID_secp256k1 = 714  # from openssl/obj_mac.h
 
 # test that OpenSSL supports secp256k1
 _ssl.EC_KEY_new_by_curve_name(_NID_secp256k1)
 
-SECP256K1_FLAGS_TYPE_CONTEXT = (1 << 0)
-SECP256K1_FLAGS_BIT_CONTEXT_SIGN = (1 << 9)
-SECP256K1_CONTEXT_SIGN = \
-    (SECP256K1_FLAGS_TYPE_CONTEXT | SECP256K1_FLAGS_BIT_CONTEXT_SIGN)
+SECP256K1_FLAGS_TYPE_CONTEXT = 1 << 0
+SECP256K1_FLAGS_BIT_CONTEXT_SIGN = 1 << 9
+SECP256K1_CONTEXT_SIGN = SECP256K1_FLAGS_TYPE_CONTEXT | SECP256K1_FLAGS_BIT_CONTEXT_SIGN
 
 
 def is_libsec256k1_available():
@@ -229,23 +285,25 @@ def use_libsecp256k1_for_signing(do_use):
         _libsecp256k1.secp256k1_context_create.restype = ctypes.c_void_p
         _libsecp256k1.secp256k1_context_create.errcheck = _check_res_void_p
         _libsecp256k1.secp256k1_context_randomize.restype = ctypes.c_int
-        _libsecp256k1.secp256k1_context_randomize.argtypes = [ctypes.c_void_p, ctypes.c_char_p]
-        _libsecp256k1_context = _libsecp256k1.secp256k1_context_create(SECP256K1_CONTEXT_SIGN)
-        assert(_libsecp256k1_context is not None)
+        _libsecp256k1.secp256k1_context_randomize.argtypes = [
+            ctypes.c_void_p,
+            ctypes.c_char_p,
+        ]
+        _libsecp256k1_context = _libsecp256k1.secp256k1_context_create(
+            SECP256K1_CONTEXT_SIGN
+        )
+        assert _libsecp256k1_context is not None
         seed = urandom(32)
         result = _libsecp256k1.secp256k1_context_randomize(_libsecp256k1_context, seed)
         assert 1 == result
 
-
-
     _libsecp256k1_enable_signing = True
-
 
 
 # From openssl/ecdsa.h
 class ECDSA_SIG_st(ctypes.Structure):
-    _fields_ = [("r", ctypes.c_void_p),
-                ("s", ctypes.c_void_p)]
+    _fields_ = [("r", ctypes.c_void_p), ("s", ctypes.c_void_p)]
+
 
 class CECKey:
     """Wrapper around OpenSSL's EC_KEY"""
@@ -277,11 +335,15 @@ class CECKey:
 
     def set_privkey(self, key):
         self.mb = ctypes.create_string_buffer(key)
-        return _ssl.d2i_ECPrivateKey(ctypes.byref(self.k), ctypes.byref(ctypes.pointer(self.mb)), len(key))
+        return _ssl.d2i_ECPrivateKey(
+            ctypes.byref(self.k), ctypes.byref(ctypes.pointer(self.mb)), len(key)
+        )
 
     def set_pubkey(self, key):
         self.mb = ctypes.create_string_buffer(key)
-        return _ssl.o2i_ECPublicKey(ctypes.byref(self.k), ctypes.byref(ctypes.pointer(self.mb)), len(key))
+        return _ssl.o2i_ECPublicKey(
+            ctypes.byref(self.k), ctypes.byref(ctypes.pointer(self.mb)), len(key)
+        )
 
     def get_privkey(self):
         size = _ssl.i2d_ECPrivateKey(self.k, 0)
@@ -297,11 +359,15 @@ class CECKey:
 
     def get_raw_ecdh_key(self, other_pubkey):
         ecdh_keybuffer = ctypes.create_string_buffer(32)
-        r = _ssl.ECDH_compute_key(ctypes.pointer(ecdh_keybuffer), 32,
-                                 _ssl.EC_KEY_get0_public_key(other_pubkey.k),
-                                 self.k, 0)
+        r = _ssl.ECDH_compute_key(
+            ctypes.pointer(ecdh_keybuffer),
+            32,
+            _ssl.EC_KEY_get0_public_key(other_pubkey.k),
+            self.k,
+            0,
+        )
         if r != 32:
-            raise Exception('CKey.get_ecdh_key(): ECDH_compute_key() failed')
+            raise Exception("CKey.get_ecdh_key(): ECDH_compute_key() failed")
         return ecdh_keybuffer.raw
 
     def get_ecdh_key(self, other_pubkey, kdf=lambda k: hashlib.sha256(k).digest()):
@@ -315,29 +381,30 @@ class CECKey:
         size = (_ssl.BN_num_bits(bn) + 7) / 8
         mb = ctypes.create_string_buffer(int(size))
         _ssl.BN_bn2bin(bn, mb)
-        return mb.raw.rjust(32, b'\x00')
+        return mb.raw.rjust(32, b"\x00")
 
     def _sign_with_libsecp256k1(self, hash):
         raw_sig = ctypes.create_string_buffer(64)
         result = _libsecp256k1.secp256k1_ecdsa_sign(
-            _libsecp256k1_context, raw_sig, hash, self.get_raw_privkey(), None, None)
+            _libsecp256k1_context, raw_sig, hash, self.get_raw_privkey(), None, None
+        )
         assert 1 == result
         sig_size0 = ctypes.c_size_t()
         sig_size0.value = 75
         mb_sig = ctypes.create_string_buffer(sig_size0.value)
         result = _libsecp256k1.secp256k1_ecdsa_signature_serialize_der(
-            _libsecp256k1_context, mb_sig, ctypes.byref(sig_size0), raw_sig)
+            _libsecp256k1_context, mb_sig, ctypes.byref(sig_size0), raw_sig
+        )
         assert 1 == result
         # libsecp256k1 creates signatures already in lower-S form, no further
         # conversion needed.
-        return mb_sig.raw[:sig_size0.value]
+        return mb_sig.raw[: sig_size0.value]
 
-
-    def sign(self, hash): # pylint: disable=redefined-builtin
+    def sign(self, hash):  # pylint: disable=redefined-builtin
         if not isinstance(hash, bytes):
-            raise TypeError('Hash must be bytes instance; got %r' % hash.__class__)
+            raise TypeError("Hash must be bytes instance; got %r" % hash.__class__)
         if len(hash) != 32:
-            raise ValueError('Hash must be exactly 32 bytes long')
+            raise ValueError("Hash must be exactly 32 bytes long")
 
         if _libsecp256k1_enable_signing:
             return self._sign_with_libsecp256k1(hash)
@@ -345,29 +412,33 @@ class CECKey:
         sig_size0 = ctypes.c_uint32()
         sig_size0.value = _ssl.ECDSA_size(self.k)
         mb_sig = ctypes.create_string_buffer(sig_size0.value)
-        result = _ssl.ECDSA_sign(0, hash, len(hash), mb_sig, ctypes.byref(sig_size0), self.k)
+        result = _ssl.ECDSA_sign(
+            0, hash, len(hash), mb_sig, ctypes.byref(sig_size0), self.k
+        )
         assert 1 == result
-        if bitcoin.core.script.IsLowDERSignature(mb_sig.raw[:sig_size0.value]):
-            return mb_sig.raw[:sig_size0.value]
+        if bitcoin.core.script.IsLowDERSignature(mb_sig.raw[: sig_size0.value]):
+            return mb_sig.raw[: sig_size0.value]
         else:
-            return self.signature_to_low_s(mb_sig.raw[:sig_size0.value])
+            return self.signature_to_low_s(mb_sig.raw[: sig_size0.value])
 
-    def sign_compact(self, hash): # pylint: disable=redefined-builtin
+    def sign_compact(self, hash):  # pylint: disable=redefined-builtin
         if not isinstance(hash, bytes):
-            raise TypeError('Hash must be bytes instance; got %r' % hash.__class__)
+            raise TypeError("Hash must be bytes instance; got %r" % hash.__class__)
         if len(hash) != 32:
-            raise ValueError('Hash must be exactly 32 bytes long')
+            raise ValueError("Hash must be exactly 32 bytes long")
 
         sig_size0 = ctypes.c_uint32()
         sig_size0.value = _ssl.ECDSA_size(self.k)
         mb_sig = ctypes.create_string_buffer(sig_size0.value)
-        result = _ssl.ECDSA_sign(0, hash, len(hash), mb_sig, ctypes.byref(sig_size0), self.k)
+        result = _ssl.ECDSA_sign(
+            0, hash, len(hash), mb_sig, ctypes.byref(sig_size0), self.k
+        )
         assert 1 == result
 
-        if bitcoin.core.script.IsLowDERSignature(mb_sig.raw[:sig_size0.value]):
-            sig = mb_sig.raw[:sig_size0.value]
+        if bitcoin.core.script.IsLowDERSignature(mb_sig.raw[: sig_size0.value]):
+            sig = mb_sig.raw[: sig_size0.value]
         else:
-            sig = self.signature_to_low_s(mb_sig.raw[:sig_size0.value])
+            sig = self.signature_to_low_s(mb_sig.raw[: sig_size0.value])
 
         sig = bitcoin.signature.DERSignature.deserialize(sig)
 
@@ -375,12 +446,12 @@ class CECKey:
         s_val = sig.s
 
         # assert that the r and s are less than 32 long, excluding leading 0s
-        assert len(r_val) <= 32 or r_val[0:-32] == b'\x00'
-        assert len(s_val) <= 32 or s_val[0:-32] == b'\x00'
+        assert len(r_val) <= 32 or r_val[0:-32] == b"\x00"
+        assert len(s_val) <= 32 or s_val[0:-32] == b"\x00"
 
         # ensure r and s are always 32 chars long by 0padding
-        r_val = ((b'\x00' * 32) + r_val)[-32:]
-        s_val = ((b'\x00' * 32) + s_val)[-32:]
+        r_val = ((b"\x00" * 32) + r_val)[-32:]
+        s_val = ((b"\x00" * 32) + s_val)[-32:]
 
         # tmp pubkey of self, but always compressed
         pubkey = CECKey()
@@ -401,7 +472,11 @@ class CECKey:
 
     def signature_to_low_s(self, sig):
         der_sig = ECDSA_SIG_st()
-        _ssl.d2i_ECDSA_SIG(ctypes.byref(ctypes.pointer(der_sig)), ctypes.byref(ctypes.c_char_p(sig)), len(sig))
+        _ssl.d2i_ECDSA_SIG(
+            ctypes.byref(ctypes.pointer(der_sig)),
+            ctypes.byref(ctypes.c_char_p(sig)),
+            len(sig),
+        )
         group = _ssl.EC_KEY_get0_group(self.k)
         order = _ssl.BN_new()
         halforder = _ssl.BN_new()
@@ -411,7 +486,7 @@ class CECKey:
 
         # Verify that s is over half the order of the curve before we actually subtract anything from it
         if _ssl.BN_cmp(der_sig.s, halforder) > 0:
-          _ssl.BN_sub(der_sig.s, order, der_sig.s)
+            _ssl.BN_sub(der_sig.s, order, der_sig.s)
 
         _ssl.BN_free(halforder)
         _ssl.BN_free(order)
@@ -422,20 +497,24 @@ class CECKey:
             _ssl.ECDSA_SIG_free(der_sig)
             return None
         new_sig = ctypes.create_string_buffer(derlen)
-        _ssl.i2d_ECDSA_SIG(ctypes.pointer(der_sig), ctypes.byref(ctypes.pointer(new_sig)))
+        _ssl.i2d_ECDSA_SIG(
+            ctypes.pointer(der_sig), ctypes.byref(ctypes.pointer(new_sig))
+        )
         _ssl.BN_free(der_sig.r)
         _ssl.BN_free(der_sig.s)
 
         return new_sig.raw
 
-    def verify(self, hash, sig): # pylint: disable=redefined-builtin
+    def verify(self, hash, sig):  # pylint: disable=redefined-builtin
         """Verify a DER signature"""
         if not sig:
-          return False
+            return False
 
         # New versions of OpenSSL will reject non-canonical DER signatures. de/re-serialize first.
         norm_sig = ctypes.c_void_p(0)
-        _ssl.d2i_ECDSA_SIG(ctypes.byref(norm_sig), ctypes.byref(ctypes.c_char_p(sig)), len(sig))
+        _ssl.d2i_ECDSA_SIG(
+            ctypes.byref(norm_sig), ctypes.byref(ctypes.c_char_p(sig)), len(sig)
+        )
 
         derlen = _ssl.i2d_ECDSA_SIG(norm_sig, 0)
         if derlen == 0:
@@ -478,7 +557,7 @@ class CECKey:
 
         try:
             r = _ssl.BN_bin2bn(bytes(sigR), len(sigR), _ssl.BN_new())
-            s = _ssl.BN_bin2bn(bytes(   sigS), len(sigS), _ssl.BN_new())
+            s = _ssl.BN_bin2bn(bytes(sigS), len(sigS), _ssl.BN_new())
 
             group = _ssl.EC_KEY_get0_group(self.k)
             ctx = _ssl.BN_CTX_new()
@@ -506,7 +585,9 @@ class CECKey:
             R = _ssl.EC_POINT_new(group)
             if R is None:
                 return -2
-            if not _ssl.EC_POINT_set_compressed_coordinates_GFp(group, R, x, recid % 2, ctx):
+            if not _ssl.EC_POINT_set_compressed_coordinates_GFp(
+                group, R, x, recid % 2, ctx
+            ):
                 return 0
 
             if check:
@@ -552,12 +633,19 @@ class CECKey:
 
             return 1
         finally:
-            if r: _ssl.BN_free(r)
-            if s: _ssl.BN_free(s)
-            if ctx: _ssl.BN_CTX_free(ctx)
-            if R: _ssl.EC_POINT_free(R)
-            if O: _ssl.EC_POINT_free(O)
-            if Q: _ssl.EC_POINT_free(Q)
+            if r:
+                _ssl.BN_free(r)
+            if s:
+                _ssl.BN_free(s)
+            if ctx:
+                _ssl.BN_CTX_free(ctx)
+            if R:
+                _ssl.EC_POINT_free(R)
+            if O:
+                _ssl.EC_POINT_free(O)
+            if Q:
+                _ssl.EC_POINT_free(Q)
+
 
 class CPubKey(bytes):
     """An encapsulated public key
@@ -580,10 +668,12 @@ class CPubKey(bytes):
         return self
 
     @classmethod
-    def recover_compact(cls, hash, sig): # pylint: disable=redefined-builtin
+    def recover_compact(cls, hash, sig):  # pylint: disable=redefined-builtin
         """Recover a public key from a compact signature."""
         if len(sig) != 65:
-            raise ValueError("Signature should be 65 characters, not [%d]" % (len(sig), ))
+            raise ValueError(
+                "Signature should be 65 characters, not [%d]" % (len(sig),)
+            )
 
         recid = (_bord(sig[0]) - 27) & 3
         compressed = (_bord(sig[0]) - 27) & 4 != 0
@@ -611,7 +701,7 @@ class CPubKey(bytes):
     def is_compressed(self):
         return len(self) == 33
 
-    def verify(self, hash, sig): # pylint: disable=redefined-builtin
+    def verify(self, hash, sig):  # pylint: disable=redefined-builtin
         return self._cec_key.verify(hash, sig)
 
     def __str__(self):
@@ -620,12 +710,16 @@ class CPubKey(bytes):
     def __repr__(self):
         # Always have represent as b'<secret>' so test cases don't have to
         # change for py2/3
-        if sys.version > '3':
-            return '%s(%s)' % (self.__class__.__name__, super(CPubKey, self).__repr__())
+        if sys.version > "3":
+            return "%s(%s)" % (self.__class__.__name__, super(CPubKey, self).__repr__())
         else:
-            return '%s(b%s)' % (self.__class__.__name__, super(CPubKey, self).__repr__())
+            return "%s(b%s)" % (
+                self.__class__.__name__,
+                super(CPubKey, self).__repr__(),
+            )
+
 
 __all__ = (
-        'CECKey',
-        'CPubKey',
+    "CECKey",
+    "CPubKey",
 )

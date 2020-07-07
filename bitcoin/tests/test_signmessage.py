@@ -21,13 +21,14 @@ import json
 
 _bchr = chr
 _bord = ord
-if sys.version > '3':
+if sys.version > "3":
     long = int
     _bchr = lambda x: bytes([x])
     _bord = lambda x: x
 
+
 def load_test_vectors(name):
-    with open(os.path.dirname(__file__) + '/data/' + name, 'r') as fd:
+    with open(os.path.dirname(__file__) + "/data/" + name, "r") as fd:
         return json.load(fd)
 
 
@@ -42,9 +43,11 @@ class Test_SignVerifyMessage(unittest.TestCase):
         self.assertTrue(VerifyMessage(address, message, signature))
 
     def test_verify_message_vectors(self):
-        for vector in load_test_vectors('signmessage.json'):
-            message = BitcoinMessage(vector['address'])
-            self.assertTrue(VerifyMessage(vector['address'], message, vector['signature']))
+        for vector in load_test_vectors("signmessage.json"):
+            message = BitcoinMessage(vector["address"])
+            self.assertTrue(
+                VerifyMessage(vector["address"], message, vector["signature"])
+            )
 
     def test_sign_message_simple(self):
         key = CBitcoinSecret("L4vB5fomsK8L95wQ7GFzvErYGht49JsCPJyJMHpB4xGM6xgi2jvG")
@@ -58,14 +61,17 @@ class Test_SignVerifyMessage(unittest.TestCase):
         self.assertTrue(VerifyMessage(address, message, signature))
 
     def test_sign_message_vectors(self):
-        for vector in load_test_vectors('signmessage.json'):
-            key = CBitcoinSecret(vector['wif'])
-            message = BitcoinMessage(vector['address'])
+        for vector in load_test_vectors("signmessage.json"):
+            key = CBitcoinSecret(vector["wif"])
+            message = BitcoinMessage(vector["address"])
 
             signature = SignMessage(key, message)
 
-            self.assertTrue(signature, "Failed to sign for [%s]" % vector['address'])
-            self.assertTrue(VerifyMessage(vector['address'], message, vector['signature']), "Failed to verify signature for [%s]" % vector['address'])
+            self.assertTrue(signature, "Failed to sign for [%s]" % vector["address"])
+            self.assertTrue(
+                VerifyMessage(vector["address"], message, vector["signature"]),
+                "Failed to verify signature for [%s]" % vector["address"],
+            )
 
 
 if __name__ == "__main__":

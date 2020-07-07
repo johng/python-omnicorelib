@@ -20,7 +20,7 @@ from .script import CScript, CScriptWitness, CScriptOp, OP_RETURN
 
 from .serialize import *
 
-if sys.version > '3':
+if sys.version > "3":
     _bytes = bytes
 else:
     _bytes = lambda x: bytes(bytearray(x))
@@ -29,31 +29,37 @@ else:
 COIN = 100000000
 MAX_BLOCK_SIZE = 1000000
 MAX_BLOCK_WEIGHT = 4000000
-MAX_BLOCK_SIGOPS = MAX_BLOCK_SIZE/50
-WITNESS_COINBASE_SCRIPTPUBKEY_MAGIC = _bytes([OP_RETURN, 0x24, 0xaa, 0x21, 0xa9, 0xed])
+MAX_BLOCK_SIGOPS = MAX_BLOCK_SIZE / 50
+WITNESS_COINBASE_SCRIPTPUBKEY_MAGIC = _bytes([OP_RETURN, 0x24, 0xAA, 0x21, 0xA9, 0xED])
+
 
 def MoneyRange(nValue, params=None):
     global coreparams
     if not params:
-      params = coreparams
+        params = coreparams
 
     return 0 <= nValue <= params.MAX_MONEY
+
 
 def _py2_x(h):
     """Convert a hex string to bytes"""
     return binascii.unhexlify(h)
 
+
 def x(h):
     """Convert a hex string to bytes"""
-    return binascii.unhexlify(h.encode('utf8'))
+    return binascii.unhexlify(h.encode("utf8"))
+
 
 def _py2_b2x(b):
     """Convert bytes to a hex string"""
     return binascii.hexlify(b)
 
+
 def b2x(b):
     """Convert bytes to a hex string"""
-    return binascii.hexlify(b).decode('utf8')
+    return binascii.hexlify(b).decode("utf8")
+
 
 def _py2_lx(h):
     """Convert a little-endian hex string to bytes
@@ -63,13 +69,15 @@ def _py2_lx(h):
     """
     return binascii.unhexlify(h)[::-1]
 
+
 def lx(h):
     """Convert a little-endian hex string to bytes
 
     Lets you write uint256's and uint160's the way the Satoshi codebase shows
     them.
     """
-    return binascii.unhexlify(h.encode('utf8'))[::-1]
+    return binascii.unhexlify(h.encode("utf8"))[::-1]
+
 
 def _py2_b2lx(b):
     """Convert bytes to a little-endian hex string
@@ -79,15 +87,17 @@ def _py2_b2lx(b):
     """
     return binascii.hexlify(b[::-1])
 
+
 def b2lx(b):
     """Convert bytes to a little-endian hex string
 
     Lets you show uint256's and uint160's the way the Satoshi codebase shows
     them.
     """
-    return binascii.hexlify(b[::-1]).decode('utf8')
+    return binascii.hexlify(b[::-1]).decode("utf8")
 
-if not (sys.version > '3'):
+
+if not (sys.version > "3"):
     x = _py2_x
     b2x = _py2_b2x
     lx = _py2_lx
@@ -101,10 +111,10 @@ del _py2_b2lx
 
 def str_money_value(value):
     """Convert an integer money value to a fixed point string"""
-    r = '%i.%08i' % (value // COIN, value % COIN)
-    r = r.rstrip('0')
-    if r[-1] == '.':
-        r += '0'
+    r = "%i.%08i" % (value // COIN, value % COIN)
+    r = r.rstrip("0")
+    if r[-1] == ".":
+        r += "0"
     return r
 
 
@@ -114,6 +124,7 @@ class ValidationError(Exception):
     Everything that is related to validating the blockchain, blocks,
     transactions, scripts, etc. is derived from this class.
     """
+
 
 def __make_mutable(cls):
     # For speed we use a class decorator that removes the immutable
@@ -128,20 +139,25 @@ def __make_mutable(cls):
 
 class COutPoint(ImmutableSerializable):
     """The combination of a transaction hash and an index n into its vout"""
-    __slots__ = ['hash', 'n']
 
-    def __init__(self, hash=b'\x00'*32, n=0xffffffff):
+    __slots__ = ["hash", "n"]
+
+    def __init__(self, hash=b"\x00" * 32, n=0xFFFFFFFF):
         if not len(hash) == 32:
-            raise ValueError('COutPoint: hash must be exactly 32 bytes; got %d bytes' % len(hash))
-        object.__setattr__(self, 'hash', hash)
-        if not (0 <= n <= 0xffffffff):
-            raise ValueError('COutPoint: n must be in range 0x0 to 0xffffffff; got %x' % n)
-        object.__setattr__(self, 'n', n)
+            raise ValueError(
+                "COutPoint: hash must be exactly 32 bytes; got %d bytes" % len(hash)
+            )
+        object.__setattr__(self, "hash", hash)
+        if not (0 <= n <= 0xFFFFFFFF):
+            raise ValueError(
+                "COutPoint: n must be in range 0x0 to 0xffffffff; got %x" % n
+            )
+        object.__setattr__(self, "n", n)
 
     @classmethod
     def stream_deserialize(cls, f):
-        hash = ser_read(f,32)
-        n = struct.unpack(b"<I", ser_read(f,4))[0]
+        hash = ser_read(f, 32)
+        n = struct.unpack(b"<I", ser_read(f, 4))[0]
         return cls(hash, n)
 
     def stream_serialize(self, f):
@@ -150,16 +166,16 @@ class COutPoint(ImmutableSerializable):
         f.write(struct.pack(b"<I", self.n))
 
     def is_null(self):
-        return ((self.hash == b'\x00'*32) and (self.n == 0xffffffff))
+        return (self.hash == b"\x00" * 32) and (self.n == 0xFFFFFFFF)
 
     def __repr__(self):
         if self.is_null():
-            return 'COutPoint()'
+            return "COutPoint()"
         else:
-            return 'COutPoint(lx(%r), %i)' % (b2lx(self.hash), self.n)
+            return "COutPoint(lx(%r), %i)" % (b2lx(self.hash), self.n)
 
     def __str__(self):
-        return '%s:%i' % (b2lx(self.hash), self.n)
+        return "%s:%i" % (b2lx(self.hash), self.n)
 
     @classmethod
     def from_outpoint(cls, outpoint):
@@ -174,9 +190,11 @@ class COutPoint(ImmutableSerializable):
         else:
             return cls(outpoint.hash, outpoint.n)
 
+
 @__make_mutable
 class CMutableOutPoint(COutPoint):
     """A mutable COutPoint"""
+
     __slots__ = []
 
     @classmethod
@@ -184,27 +202,32 @@ class CMutableOutPoint(COutPoint):
         """Create a mutable copy of an existing COutPoint"""
         return cls(outpoint.hash, outpoint.n)
 
+
 class CTxIn(ImmutableSerializable):
     """An input of a transaction
 
     Contains the location of the previous transaction's output that it claims,
     and a signature that matches the output's public key.
     """
-    __slots__ = ['prevout', 'scriptSig', 'nSequence']
 
-    def __init__(self, prevout=COutPoint(), scriptSig=CScript(), nSequence = 0xffffffff):
-        if not (0 <= nSequence <= 0xffffffff):
-            raise ValueError('CTxIn: nSequence must be an integer between 0x0 and 0xffffffff; got %x' % nSequence)
-        object.__setattr__(self, 'nSequence', nSequence)
+    __slots__ = ["prevout", "scriptSig", "nSequence"]
 
-        object.__setattr__(self, 'prevout', prevout)
-        object.__setattr__(self, 'scriptSig', scriptSig)
+    def __init__(self, prevout=COutPoint(), scriptSig=CScript(), nSequence=0xFFFFFFFF):
+        if not (0 <= nSequence <= 0xFFFFFFFF):
+            raise ValueError(
+                "CTxIn: nSequence must be an integer between 0x0 and 0xffffffff; got %x"
+                % nSequence
+            )
+        object.__setattr__(self, "nSequence", nSequence)
+
+        object.__setattr__(self, "prevout", prevout)
+        object.__setattr__(self, "scriptSig", scriptSig)
 
     @classmethod
     def stream_deserialize(cls, f):
         prevout = COutPoint.stream_deserialize(f)
         scriptSig = script.CScript(BytesSerializer.stream_deserialize(f))
-        nSequence = struct.unpack(b"<I", ser_read(f,4))[0]
+        nSequence = struct.unpack(b"<I", ser_read(f, 4))[0]
         return cls(prevout, scriptSig, nSequence)
 
     def stream_serialize(self, f):
@@ -213,10 +236,14 @@ class CTxIn(ImmutableSerializable):
         f.write(struct.pack(b"<I", self.nSequence))
 
     def is_final(self):
-        return (self.nSequence == 0xffffffff)
+        return self.nSequence == 0xFFFFFFFF
 
     def __repr__(self):
-        return "CTxIn(%s, %s, 0x%x)" % (repr(self.prevout), repr(self.scriptSig), self.nSequence)
+        return "CTxIn(%s, %s, 0x%x)" % (
+            repr(self.prevout),
+            repr(self.scriptSig),
+            self.nSequence,
+        )
 
     @classmethod
     def from_txin(cls, txin):
@@ -229,16 +256,23 @@ class CTxIn(ImmutableSerializable):
             return txin
 
         else:
-            return cls(COutPoint.from_outpoint(txin.prevout), txin.scriptSig, txin.nSequence)
+            return cls(
+                COutPoint.from_outpoint(txin.prevout), txin.scriptSig, txin.nSequence
+            )
+
 
 @__make_mutable
 class CMutableTxIn(CTxIn):
     """A mutable CTxIn"""
+
     __slots__ = []
 
-    def __init__(self, prevout=None, scriptSig=CScript(), nSequence = 0xffffffff):
-        if not (0 <= nSequence <= 0xffffffff):
-            raise ValueError('CTxIn: nSequence must be an integer between 0x0 and 0xffffffff; got %x' % nSequence)
+    def __init__(self, prevout=None, scriptSig=CScript(), nSequence=0xFFFFFFFF):
+        if not (0 <= nSequence <= 0xFFFFFFFF):
+            raise ValueError(
+                "CTxIn: nSequence must be an integer between 0x0 and 0xffffffff; got %x"
+                % nSequence
+            )
         self.nSequence = nSequence
 
         if prevout is None:
@@ -259,15 +293,16 @@ class CTxOut(ImmutableSerializable):
     Contains the public key that the next input must be able to sign with to
     claim it.
     """
-    __slots__ = ['nValue', 'scriptPubKey']
+
+    __slots__ = ["nValue", "scriptPubKey"]
 
     def __init__(self, nValue=-1, scriptPubKey=script.CScript()):
-        object.__setattr__(self, 'nValue', int(nValue))
-        object.__setattr__(self, 'scriptPubKey', scriptPubKey)
+        object.__setattr__(self, "nValue", int(nValue))
+        object.__setattr__(self, "scriptPubKey", scriptPubKey)
 
     @classmethod
     def stream_deserialize(cls, f):
-        nValue = struct.unpack(b"<q", ser_read(f,8))[0]
+        nValue = struct.unpack(b"<q", ser_read(f, 8))[0]
         scriptPubKey = script.CScript(BytesSerializer.stream_deserialize(f))
         return cls(nValue, scriptPubKey)
 
@@ -284,7 +319,10 @@ class CTxOut(ImmutableSerializable):
 
     def __repr__(self):
         if self.nValue >= 0:
-            return "CTxOut(%s*COIN, %r)" % (str_money_value(self.nValue), self.scriptPubKey)
+            return "CTxOut(%s*COIN, %r)" % (
+                str_money_value(self.nValue),
+                self.scriptPubKey,
+            )
         else:
             return "CTxOut(%d, %r)" % (self.nValue, self.scriptPubKey)
 
@@ -301,9 +339,11 @@ class CTxOut(ImmutableSerializable):
         else:
             return cls(txout.nValue, txout.scriptPubKey)
 
+
 @__make_mutable
 class CMutableTxOut(CTxOut):
     """A mutable CTxOut"""
+
     __slots__ = []
 
     @classmethod
@@ -314,10 +354,11 @@ class CMutableTxOut(CTxOut):
 
 class CTxInWitness(ImmutableSerializable):
     """Witness data for a single transaction input"""
-    __slots__ = ['scriptWitness']
+
+    __slots__ = ["scriptWitness"]
 
     def __init__(self, scriptWitness=CScriptWitness()):
-        object.__setattr__(self, 'scriptWitness', scriptWitness)
+        object.__setattr__(self, "scriptWitness", scriptWitness)
 
     def is_null(self):
         return self.scriptWitness.is_null()
@@ -346,23 +387,27 @@ class CTxInWitness(ImmutableSerializable):
         else:
             return cls(txinwitness.scriptWitness)
 
+
 class CTxWitness(ImmutableSerializable):
     """Witness data for all inputs to a transaction"""
-    __slots__ = ['vtxinwit']
+
+    __slots__ = ["vtxinwit"]
 
     def __init__(self, vtxinwit=()):
-        object.__setattr__(self, 'vtxinwit', vtxinwit)
+        object.__setattr__(self, "vtxinwit", vtxinwit)
 
     def is_null(self):
         for n in range(len(self.vtxinwit)):
-            if not self.vtxinwit[n].is_null(): return False
+            if not self.vtxinwit[n].is_null():
+                return False
         return True
 
     # FIXME this cannot be a @classmethod like the others because we need to
     # know how many items to deserialize, which comes from len(vin)
     def stream_deserialize(self, f):
-        vtxinwit = tuple(CTxInWitness.stream_deserialize(f) for dummy in
-                range(len(self.vtxinwit)))
+        vtxinwit = tuple(
+            CTxInWitness.stream_deserialize(f) for dummy in range(len(self.vtxinwit))
+        )
         return CTxWitness(vtxinwit)
 
     def stream_serialize(self, f):
@@ -370,7 +415,7 @@ class CTxWitness(ImmutableSerializable):
             self.vtxinwit[i].stream_serialize(f)
 
     def __repr__(self):
-        return "CTxWitness(%s)" % (','.join(repr(w) for w in self.vtxinwit))
+        return "CTxWitness(%s)" % (",".join(repr(w) for w in self.vtxinwit))
 
     @classmethod
     def from_txwitness(cls, txwitness):
@@ -387,7 +432,8 @@ class CTxWitness(ImmutableSerializable):
 
 class CTransaction(ImmutableSerializable):
     """A transaction"""
-    __slots__ = ['nVersion', 'vin', 'vout', 'nLockTime', 'wit']
+
+    __slots__ = ["nVersion", "vin", "vout", "nLockTime", "wit"]
 
     def __init__(self, vin=(), vout=(), nLockTime=0, nVersion=1, witness=CTxWitness()):
         """Create a new transaction
@@ -396,13 +442,18 @@ class CTransaction(ImmutableSerializable):
         respectively. If their contents are not already immutable, immutable
         copies will be made.
         """
-        if not (0 <= nLockTime <= 0xffffffff):
-            raise ValueError('CTransaction: nLockTime must be in range 0x0 to 0xffffffff; got %x' % nLockTime)
-        object.__setattr__(self, 'nLockTime', nLockTime)
-        object.__setattr__(self, 'nVersion', nVersion)
-        object.__setattr__(self, 'vin', tuple(CTxIn.from_txin(txin) for txin in vin))
-        object.__setattr__(self, 'vout', tuple(CTxOut.from_txout(txout) for txout in vout))
-        object.__setattr__(self, 'wit', CTxWitness.from_txwitness(witness))
+        if not (0 <= nLockTime <= 0xFFFFFFFF):
+            raise ValueError(
+                "CTransaction: nLockTime must be in range 0x0 to 0xffffffff; got %x"
+                % nLockTime
+            )
+        object.__setattr__(self, "nLockTime", nLockTime)
+        object.__setattr__(self, "nVersion", nVersion)
+        object.__setattr__(self, "vin", tuple(CTxIn.from_txin(txin) for txin in vin))
+        object.__setattr__(
+            self, "vout", tuple(CTxOut.from_txout(txout) for txout in vout)
+        )
+        object.__setattr__(self, "wit", CTxWitness.from_txwitness(witness))
 
     @classmethod
     def stream_deserialize(cls, f):
@@ -418,31 +469,30 @@ class CTransaction(ImmutableSerializable):
         but not here.
         """
         # FIXME can't assume f is seekable
-        nVersion = struct.unpack(b"<i", ser_read(f,4))[0]
+        nVersion = struct.unpack(b"<i", ser_read(f, 4))[0]
         pos = f.tell()
-        markerbyte = struct.unpack(b'B', ser_read(f, 1))[0]
-        flagbyte = struct.unpack(b'B', ser_read(f, 1))[0]
+        markerbyte = struct.unpack(b"B", ser_read(f, 1))[0]
+        flagbyte = struct.unpack(b"B", ser_read(f, 1))[0]
         if markerbyte == 0 and flagbyte == 1:
             vin = VectorSerializer.stream_deserialize(CTxIn, f)
             vout = VectorSerializer.stream_deserialize(CTxOut, f)
             wit = CTxWitness(tuple(0 for dummy in range(len(vin))))
             wit = wit.stream_deserialize(f)
-            nLockTime = struct.unpack(b"<I", ser_read(f,4))[0]
+            nLockTime = struct.unpack(b"<I", ser_read(f, 4))[0]
             return cls(vin, vout, nLockTime, nVersion, wit)
         else:
-            f.seek(pos) # put marker byte back, since we don't have peek
+            f.seek(pos)  # put marker byte back, since we don't have peek
             vin = VectorSerializer.stream_deserialize(CTxIn, f)
             vout = VectorSerializer.stream_deserialize(CTxOut, f)
-            nLockTime = struct.unpack(b"<I", ser_read(f,4))[0]
+            nLockTime = struct.unpack(b"<I", ser_read(f, 4))[0]
             return cls(vin, vout, nLockTime, nVersion)
-
 
     def stream_serialize(self, f, include_witness=True):
         f.write(struct.pack(b"<i", self.nVersion))
         if include_witness and not self.wit.is_null():
-            assert(len(self.wit.vtxinwit) <= len(self.vin))
-            f.write(b'\x00') # Marker
-            f.write(b'\x01') # Flag
+            assert len(self.wit.vtxinwit) <= len(self.vin)
+            f.write(b"\x00")  # Marker
+            f.write(b"\x01")  # Flag
             VectorSerializer.stream_serialize(CTxIn, self.vin, f)
             VectorSerializer.stream_serialize(CTxOut, self.vout, f)
             self.wit.stream_serialize(f)
@@ -459,8 +509,13 @@ class CTransaction(ImmutableSerializable):
         return not self.wit.is_null()
 
     def __repr__(self):
-        return "CTransaction(%r, %r, %i, %i, %r)" % (self.vin, self.vout,
-                self.nLockTime, self.nVersion, self.wit)
+        return "CTransaction(%r, %r, %i, %i, %r)" % (
+            self.vin,
+            self.vout,
+            self.nLockTime,
+            self.nVersion,
+            self.wit,
+        )
 
     @classmethod
     def from_tx(cls, tx):
@@ -480,20 +535,28 @@ class CTransaction(ImmutableSerializable):
             given by GetHash.  GetTxid excludes witness data, while GetHash
             includes it. """
         if self.wit != CTxWitness():
-            txid = Hash(CTransaction(self.vin, self.vout, self.nLockTime,
-                self.nVersion).serialize())
+            txid = Hash(
+                CTransaction(
+                    self.vin, self.vout, self.nLockTime, self.nVersion
+                ).serialize()
+            )
         else:
             txid = Hash(self.serialize())
         return txid
 
+
 @__make_mutable
 class CMutableTransaction(CTransaction):
     """A mutable transaction"""
+
     __slots__ = []
 
     def __init__(self, vin=None, vout=None, nLockTime=0, nVersion=1, witness=None):
-        if not (0 <= nLockTime <= 0xffffffff):
-            raise ValueError('CTransaction: nLockTime must be in range 0x0 to 0xffffffff; got %x' % nLockTime)
+        if not (0 <= nLockTime <= 0xFFFFFFFF):
+            raise ValueError(
+                "CTransaction: nLockTime must be in range 0x0 to 0xffffffff; got %x"
+                % nLockTime
+            )
         self.nLockTime = nLockTime
 
         if vin is None:
@@ -520,26 +583,42 @@ class CMutableTransaction(CTransaction):
 
 class CBlockHeader(ImmutableSerializable):
     """A block header"""
-    __slots__ = ['nVersion', 'hashPrevBlock', 'hashMerkleRoot', 'nTime', 'nBits', 'nNonce']
 
-    def __init__(self, nVersion=2, hashPrevBlock=b'\x00'*32, hashMerkleRoot=b'\x00'*32, nTime=0, nBits=0, nNonce=0):
-        object.__setattr__(self, 'nVersion', nVersion)
+    __slots__ = [
+        "nVersion",
+        "hashPrevBlock",
+        "hashMerkleRoot",
+        "nTime",
+        "nBits",
+        "nNonce",
+    ]
+
+    def __init__(
+        self,
+        nVersion=2,
+        hashPrevBlock=b"\x00" * 32,
+        hashMerkleRoot=b"\x00" * 32,
+        nTime=0,
+        nBits=0,
+        nNonce=0,
+    ):
+        object.__setattr__(self, "nVersion", nVersion)
         assert len(hashPrevBlock) == 32
-        object.__setattr__(self, 'hashPrevBlock', hashPrevBlock)
+        object.__setattr__(self, "hashPrevBlock", hashPrevBlock)
         assert len(hashMerkleRoot) == 32
-        object.__setattr__(self, 'hashMerkleRoot', hashMerkleRoot)
-        object.__setattr__(self, 'nTime', nTime)
-        object.__setattr__(self, 'nBits', nBits)
-        object.__setattr__(self, 'nNonce', nNonce)
+        object.__setattr__(self, "hashMerkleRoot", hashMerkleRoot)
+        object.__setattr__(self, "nTime", nTime)
+        object.__setattr__(self, "nBits", nBits)
+        object.__setattr__(self, "nNonce", nNonce)
 
     @classmethod
     def stream_deserialize(cls, f):
-        nVersion = struct.unpack(b"<i", ser_read(f,4))[0]
-        hashPrevBlock = ser_read(f,32)
-        hashMerkleRoot = ser_read(f,32)
-        nTime = struct.unpack(b"<I", ser_read(f,4))[0]
-        nBits = struct.unpack(b"<I", ser_read(f,4))[0]
-        nNonce = struct.unpack(b"<I", ser_read(f,4))[0]
+        nVersion = struct.unpack(b"<i", ser_read(f, 4))[0]
+        hashPrevBlock = ser_read(f, 32)
+        hashMerkleRoot = ser_read(f, 32)
+        nTime = struct.unpack(b"<I", ser_read(f, 4))[0]
+        nBits = struct.unpack(b"<I", ser_read(f, 4))[0]
+        nNonce = struct.unpack(b"<I", ser_read(f, 4))[0]
         return cls(nVersion, hashPrevBlock, hashMerkleRoot, nTime, nBits, nNonce)
 
     def stream_serialize(self, f):
@@ -555,8 +634,8 @@ class CBlockHeader(ImmutableSerializable):
     @staticmethod
     def calc_difficulty(nBits):
         """Calculate difficulty from nBits target"""
-        nShift = (nBits >> 24) & 0xff
-        dDiff = float(0x0000ffff) / float(nBits & 0x00ffffff)
+        nShift = (nBits >> 24) & 0xFF
+        dDiff = float(0x0000FFFF) / float(nBits & 0x00FFFFFF)
         while nShift < 29:
             dDiff *= 256.0
             nShift += 1
@@ -564,19 +643,29 @@ class CBlockHeader(ImmutableSerializable):
             dDiff /= 256.0
             nShift -= 1
         return dDiff
+
     difficulty = property(lambda self: CBlockHeader.calc_difficulty(self.nBits))
 
     def __repr__(self):
-        return "%s(%i, lx(%s), lx(%s), %s, 0x%08x, 0x%08x)" % \
-                (self.__class__.__name__, self.nVersion, b2lx(self.hashPrevBlock), b2lx(self.hashMerkleRoot),
-                 self.nTime, self.nBits, self.nNonce)
+        return "%s(%i, lx(%s), lx(%s), %s, 0x%08x, 0x%08x)" % (
+            self.__class__.__name__,
+            self.nVersion,
+            b2lx(self.hashPrevBlock),
+            b2lx(self.hashMerkleRoot),
+            self.nTime,
+            self.nBits,
+            self.nNonce,
+        )
+
 
 class NoWitnessData(Exception):
     """The block does not have witness data"""
 
+
 class CBlock(CBlockHeader):
     """A block including all transactions in it"""
-    __slots__ = ['vtx', 'vMerkleTree', 'vWitnessMerkleTree']
+
+    __slots__ = ["vtx", "vMerkleTree", "vWitnessMerkleTree"]
 
     @staticmethod
     def build_merkle_tree_from_txids(txids):
@@ -601,8 +690,8 @@ class CBlock(CBlockHeader):
         j = 0
         while size > 1:
             for i in range(0, size, 2):
-                i2 = min(i+1, size-1)
-                merkle_tree.append(Hash(merkle_tree[j+i] + merkle_tree[j+i2]))
+                i2 = min(i + 1, size - 1)
+                merkle_tree.append(Hash(merkle_tree[j + i] + merkle_tree[j + i2]))
 
             j += size
             size = (size + 1) // 2
@@ -622,7 +711,7 @@ class CBlock(CBlockHeader):
         re-calculates it from scratch.
         """
         if not len(self.vtx):
-            raise ValueError('Block contains no transactions')
+            raise ValueError("Block contains no transactions")
         return self.build_merkle_tree_from_txs(self.vtx)[-1]
 
     @staticmethod
@@ -635,7 +724,7 @@ class CBlock(CBlockHeader):
             has_witness |= tx.has_witness()
         if not has_witness:
             raise NoWitnessData
-        hashes[0] = b'\x00' * 32
+        hashes[0] = b"\x00" * 32
         return CBlock.build_merkle_tree_from_txids(hashes)
 
     def calc_witness_merkle_root(self):
@@ -645,7 +734,7 @@ class CBlock(CBlockHeader):
         re-calculates it from scratch.
         """
         if not len(self.vtx):
-            raise ValueError('Block contains no transactions')
+            raise ValueError("Block contains no transactions")
         return self.build_witness_merkle_tree_from_txs(self.vtx)[-1]
 
     def get_witness_commitment_index(self):
@@ -654,35 +743,48 @@ class CBlock(CBlockHeader):
         Return None or an index
         """
         if not len(self.vtx):
-            raise ValueError('Block contains no transactions')
+            raise ValueError("Block contains no transactions")
         commit_pos = None
         for index, out in enumerate(self.vtx[0].vout):
             script = out.scriptPubKey
             if len(script) >= 38 and script[:6] == WITNESS_COINBASE_SCRIPTPUBKEY_MAGIC:
                 commit_pos = index
         if commit_pos is None:
-            raise ValueError('The witness commitment is missed')
+            raise ValueError("The witness commitment is missed")
         return commit_pos
 
-    def __init__(self, nVersion=2, hashPrevBlock=b'\x00'*32, hashMerkleRoot=b'\x00'*32, nTime=0, nBits=0, nNonce=0, vtx=()):
+    def __init__(
+        self,
+        nVersion=2,
+        hashPrevBlock=b"\x00" * 32,
+        hashMerkleRoot=b"\x00" * 32,
+        nTime=0,
+        nBits=0,
+        nNonce=0,
+        vtx=(),
+    ):
         """Create a new block"""
         if vtx:
             vMerkleTree = tuple(CBlock.build_merkle_tree_from_txs(vtx))
-            if hashMerkleRoot == b'\x00'*32:
+            if hashMerkleRoot == b"\x00" * 32:
                 hashMerkleRoot = vMerkleTree[-1]
             elif hashMerkleRoot != vMerkleTree[-1]:
-                raise CheckBlockError("CBlock : hashMerkleRoot is not compatible with vtx")
+                raise CheckBlockError(
+                    "CBlock : hashMerkleRoot is not compatible with vtx"
+                )
         else:
             vMerkleTree = ()
-        super(CBlock, self).__init__(nVersion, hashPrevBlock, hashMerkleRoot, nTime, nBits, nNonce)
+        super(CBlock, self).__init__(
+            nVersion, hashPrevBlock, hashMerkleRoot, nTime, nBits, nNonce
+        )
 
-        object.__setattr__(self, 'vMerkleTree', vMerkleTree)
+        object.__setattr__(self, "vMerkleTree", vMerkleTree)
         try:
             vWitnessMerkleTree = tuple(CBlock.build_witness_merkle_tree_from_txs(vtx))
         except NoWitnessData:
             vWitnessMerkleTree = ()
-        object.__setattr__(self, 'vWitnessMerkleTree', vWitnessMerkleTree)
-        object.__setattr__(self, 'vtx', tuple(CTransaction.from_tx(tx) for tx in vtx))
+        object.__setattr__(self, "vWitnessMerkleTree", vWitnessMerkleTree)
+        object.__setattr__(self, "vtx", tuple(CTransaction.from_tx(tx) for tx in vtx))
 
     @classmethod
     def stream_deserialize(cls, f):
@@ -690,31 +792,35 @@ class CBlock(CBlockHeader):
 
         vtx = VectorSerializer.stream_deserialize(CTransaction, f)
         vMerkleTree = tuple(CBlock.build_merkle_tree_from_txs(vtx))
-        object.__setattr__(self, 'vMerkleTree', vMerkleTree)
+        object.__setattr__(self, "vMerkleTree", vMerkleTree)
         try:
             vWitnessMerkleTree = tuple(CBlock.build_witness_merkle_tree_from_txs(vtx))
         except NoWitnessData:
             vWitnessMerkleTree = ()
-        object.__setattr__(self, 'vWitnessMerkleTree', vWitnessMerkleTree)
-        object.__setattr__(self, 'vtx', tuple(vtx))
+        object.__setattr__(self, "vWitnessMerkleTree", vWitnessMerkleTree)
+        object.__setattr__(self, "vtx", tuple(vtx))
 
         return self
 
     def stream_serialize(self, f, include_witness=True):
         super(CBlock, self).stream_serialize(f)
-        VectorSerializer.stream_serialize(CTransaction, self.vtx, f, dict(include_witness=include_witness))
+        VectorSerializer.stream_serialize(
+            CTransaction, self.vtx, f, dict(include_witness=include_witness)
+        )
 
     def get_header(self):
         """Return the block header
 
         Returned header is a new object.
         """
-        return CBlockHeader(nVersion=self.nVersion,
-                            hashPrevBlock=self.hashPrevBlock,
-                            hashMerkleRoot=self.hashMerkleRoot,
-                            nTime=self.nTime,
-                            nBits=self.nBits,
-                            nNonce=self.nNonce)
+        return CBlockHeader(
+            nVersion=self.nVersion,
+            hashPrevBlock=self.hashPrevBlock,
+            hashMerkleRoot=self.hashMerkleRoot,
+            nTime=self.nTime,
+            nBits=self.nBits,
+            nNonce=self.nNonce,
+        )
 
     def GetHash(self):
         """Return the block hash
@@ -726,40 +832,61 @@ class CBlock(CBlockHeader):
             return self._cached_GetHash
         except AttributeError:
             _cached_GetHash = self.get_header().GetHash()
-            object.__setattr__(self, '_cached_GetHash', _cached_GetHash)
+            object.__setattr__(self, "_cached_GetHash", _cached_GetHash)
             return _cached_GetHash
 
     def GetWeight(self):
         """Return the block weight: (stripped_size * 3) + total_size"""
-        return len(self.serialize(dict(include_witness=False))) * 3 + len(self.serialize())
+        return len(self.serialize(dict(include_witness=False))) * 3 + len(
+            self.serialize()
+        )
+
 
 class CoreChainParams(object):
     """Define consensus-critical parameters of a given instance of the Bitcoin system"""
+
     MAX_MONEY = None
     GENESIS_BLOCK = None
     PROOF_OF_WORK_LIMIT = None
     SUBSIDY_HALVING_INTERVAL = None
     NAME = None
 
+
 class CoreMainParams(CoreChainParams):
     MAX_MONEY = 21000000 * COIN
-    NAME = 'mainnet'
-    GENESIS_BLOCK = CBlock.deserialize(x('0100000000000000000000000000000000000000000000000000000000000000000000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b1e5e4a29ab5f49ffff001d1dac2b7c0101000000010000000000000000000000000000000000000000000000000000000000000000ffffffff4d04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73ffffffff0100f2052a01000000434104678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5fac00000000'))
+    NAME = "mainnet"
+    GENESIS_BLOCK = CBlock.deserialize(
+        x(
+            "0100000000000000000000000000000000000000000000000000000000000000000000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b1e5e4a29ab5f49ffff001d1dac2b7c0101000000010000000000000000000000000000000000000000000000000000000000000000ffffffff4d04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73ffffffff0100f2052a01000000434104678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5fac00000000"
+        )
+    )
     SUBSIDY_HALVING_INTERVAL = 210000
-    PROOF_OF_WORK_LIMIT = 2**256-1 >> 32
+    PROOF_OF_WORK_LIMIT = 2 ** 256 - 1 >> 32
+
 
 class CoreTestNetParams(CoreMainParams):
-    NAME = 'testnet'
-    GENESIS_BLOCK = CBlock.deserialize(x('0100000000000000000000000000000000000000000000000000000000000000000000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b1e5e4adae5494dffff001d1aa4ae180101000000010000000000000000000000000000000000000000000000000000000000000000ffffffff4d04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73ffffffff0100f2052a01000000434104678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5fac00000000'))
+    NAME = "testnet"
+    GENESIS_BLOCK = CBlock.deserialize(
+        x(
+            "0100000000000000000000000000000000000000000000000000000000000000000000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b1e5e4adae5494dffff001d1aa4ae180101000000010000000000000000000000000000000000000000000000000000000000000000ffffffff4d04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73ffffffff0100f2052a01000000434104678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5fac00000000"
+        )
+    )
+
 
 class CoreRegTestParams(CoreTestNetParams):
-    NAME = 'regtest'
-    GENESIS_BLOCK = CBlock.deserialize(x('0100000000000000000000000000000000000000000000000000000000000000000000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b1e5e4adae5494dffff7f20020000000101000000010000000000000000000000000000000000000000000000000000000000000000ffffffff4d04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73ffffffff0100f2052a01000000434104678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5fac00000000'))
+    NAME = "regtest"
+    GENESIS_BLOCK = CBlock.deserialize(
+        x(
+            "0100000000000000000000000000000000000000000000000000000000000000000000003ba3edfd7a7b12b27ac72c3e67768f617fc81bc3888a51323a9fb8aa4b1e5e4adae5494dffff7f20020000000101000000010000000000000000000000000000000000000000000000000000000000000000ffffffff4d04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73ffffffff0100f2052a01000000434104678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5fac00000000"
+        )
+    )
     SUBSIDY_HALVING_INTERVAL = 150
-    PROOF_OF_WORK_LIMIT = 2**256-1 >> 1
+    PROOF_OF_WORK_LIMIT = 2 ** 256 - 1 >> 1
+
 
 """Master global setting for what core chain params we're using"""
 coreparams = CoreMainParams()
+
 
 def _SelectCoreParams(name):
     """Select the core chain parameters to use
@@ -768,18 +895,19 @@ def _SelectCoreParams(name):
     consensus-critical and general parameters are set properly.
     """
     global coreparams
-    if name == 'mainnet':
+    if name == "mainnet":
         coreparams = CoreMainParams()
-    elif name == 'testnet':
+    elif name == "testnet":
         coreparams = CoreTestNetParams()
-    elif name == 'regtest':
+    elif name == "regtest":
         coreparams = CoreRegTestParams()
     else:
-        raise ValueError('Unknown chain %r' % name)
+        raise ValueError("Unknown chain %r" % name)
 
 
 class CheckTransactionError(ValidationError):
     pass
+
 
 def CheckTransaction(tx):
     """Basic transaction checks that don't depend on any context.
@@ -826,14 +954,13 @@ def CheckTransaction(tx):
                 raise CheckTransactionError("CheckTransaction() : prevout is null")
 
 
-
-
-
 class CheckBlockHeaderError(ValidationError):
     pass
 
+
 class CheckProofOfWorkError(CheckBlockHeaderError):
     pass
+
 
 def CheckProofOfWork(hash, nBits):
     """Check a proof-of-work
@@ -852,7 +979,7 @@ def CheckProofOfWork(hash, nBits):
         raise CheckProofOfWorkError("CheckProofOfWork() : hash doesn't match nBits")
 
 
-def CheckBlockHeader(block_header, fCheckPoW = True, cur_time=None):
+def CheckBlockHeader(block_header, fCheckPoW=True, cur_time=None):
     """Context independent CBlockHeader checks.
 
     fCheckPoW - Check proof-of-work.
@@ -870,11 +997,14 @@ def CheckBlockHeader(block_header, fCheckPoW = True, cur_time=None):
 
     # Check timestamp
     if block_header.nTime > cur_time + 2 * 60 * 60:
-        raise CheckBlockHeaderError("CheckBlockHeader() : block timestamp too far in the future")
+        raise CheckBlockHeaderError(
+            "CheckBlockHeader() : block timestamp too far in the future"
+        )
 
 
 class CheckBlockError(CheckBlockHeaderError):
     pass
+
 
 def GetLegacySigOpCount(tx):
     nSigOps = 0
@@ -885,7 +1015,7 @@ def GetLegacySigOpCount(tx):
     return nSigOps
 
 
-def CheckBlock(block, fCheckPoW = True, fCheckMerkleRoot = True, cur_time=None):
+def CheckBlock(block, fCheckPoW=True, fCheckMerkleRoot=True, cur_time=None):
     """Context independent CBlock checks.
 
     CheckBlockHeader() is called first, which may raise a CheckBlockHeader
@@ -958,47 +1088,48 @@ def CheckBlock(block, fCheckPoW = True, fCheckMerkleRoot = True, cur_time=None):
             commit_script = block.vtx[0].vout[index].scriptPubKey
             if not (6 + 32 <= len(commit_script) <= 6 + 32 + 1):
                 raise CheckBlockError("CheckBlock() : invalid segwit commitment length")
-            commitment = commit_script[6:6 + 32]
-            commit = commit_script[6:6 + 32]
+            commitment = commit_script[6 : 6 + 32]
+            commit = commit_script[6 : 6 + 32]
             if commit != Hash(root + nonce):
                 raise CheckBlockError("CheckBlock() : invalid segwit commitment")
 
+
 __all__ = (
-        'Hash',
-        'Hash160',
-        'COIN',
-        'MAX_BLOCK_SIZE',
-        'MAX_BLOCK_SIGOPS',
-        'MoneyRange',
-        'x',
-        'b2x',
-        'lx',
-        'b2lx',
-        'str_money_value',
-        'ValidationError',
-        'COutPoint',
-        'CMutableOutPoint',
-        'CTxIn',
-        'CMutableTxIn',
-        'CTxOut',
-        'CMutableTxOut',
-        'CTransaction',
-        'CMutableTransaction',
-        'CTxWitness',
-        'CTxInWitness',
-        'CBlockHeader',
-        'CBlock',
-        'CoreChainParams',
-        'CoreMainParams',
-        'CoreTestNetParams',
-        'CoreRegTestParams',
-        'CheckTransactionError',
-        'CheckTransaction',
-        'CheckBlockHeaderError',
-        'CheckProofOfWorkError',
-        'CheckProofOfWork',
-        'CheckBlockHeader',
-        'CheckBlockError',
-        'GetLegacySigOpCount',
-        'CheckBlock',
+    "Hash",
+    "Hash160",
+    "COIN",
+    "MAX_BLOCK_SIZE",
+    "MAX_BLOCK_SIGOPS",
+    "MoneyRange",
+    "x",
+    "b2x",
+    "lx",
+    "b2lx",
+    "str_money_value",
+    "ValidationError",
+    "COutPoint",
+    "CMutableOutPoint",
+    "CTxIn",
+    "CMutableTxIn",
+    "CTxOut",
+    "CMutableTxOut",
+    "CTransaction",
+    "CMutableTransaction",
+    "CTxWitness",
+    "CTxInWitness",
+    "CBlockHeader",
+    "CBlock",
+    "CoreChainParams",
+    "CoreMainParams",
+    "CoreTestNetParams",
+    "CoreRegTestParams",
+    "CheckTransactionError",
+    "CheckTransaction",
+    "CheckBlockHeaderError",
+    "CheckProofOfWorkError",
+    "CheckProofOfWork",
+    "CheckBlockHeader",
+    "CheckBlockError",
+    "GetLegacySigOpCount",
+    "CheckBlock",
 )
