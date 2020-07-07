@@ -11,7 +11,7 @@ with open(os.path.join(here, 'README.md')) as f:
 
 requires = []
 
-setup(name='python-bitcoinlib',
+setup(name='python-omnicorelib',
       version=__version__,
       description='The Swiss Army Knife of the Bitcoin protocol.',
       long_description=README,
