@@ -1,6 +1,8 @@
-# python-bitcoinlib
+# python-omnicorelib
 
-This Python3 library provides an easy interface to the bitcoin data
+This python library provides an interface to the bitcoind fork omnicore.
+
+This library provides an easy interface to the bitcoin data
 structures and protocol. The approach is low-level and "ground up", with a
 focus on providing tools to manipulate the internals of how Bitcoin works.
 
