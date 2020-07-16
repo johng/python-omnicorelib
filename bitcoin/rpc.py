@@ -860,6 +860,11 @@ class Proxy(BaseProxy):
     def removenode(self, node):
         return self._addnode(node, "remove")
 
+    def omni_sendissuancemanaged(self, *arg):
+        return self._call("omni_sendissuancemanaged", *arg)
+
+    def omni_listproperties(self):
+        return self._call("omni_listproperties")
 
 __all__ = (
     "JSONRPCError",
