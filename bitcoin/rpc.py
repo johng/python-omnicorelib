@@ -866,6 +866,12 @@ class Proxy(BaseProxy):
     def omni_listproperties(self):
         return self._call("omni_listproperties")
 
+    def omni_send(self, *arg):
+        return self._call("omni_send", *arg)
+
+    def omni_sendgrant(self, *arg):
+        return self._call("omni_sendgrant", *arg)
+
 __all__ = (
     "JSONRPCError",
     "ForbiddenBySafeModeError",
