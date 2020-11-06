@@ -13,7 +13,7 @@ focus on providing tools to manipulate the internals of how Bitcoin works.
 
     sudo apt-get install libssl-dev
 
-The RPC interface, `bitcoin.rpc`, is designed to work with Bitcoin Core v0.16.0.
+The RPC interface, `omnicore.rpc`, is designed to work with Bitcoin Core v0.16.0.
 Older versions may work but there do exist some incompatibilities.
 
 
@@ -23,23 +23,23 @@ Everything consensus critical is found in the modules under bitcoin.core. This
 rule is followed pretty strictly, for instance chain parameters are split into
 consensus critical and non-consensus-critical.
 
-    bitcoin.core            - Basic core definitions, datastructures, and
+    omnicore.core            - Basic core definitions, datastructures, and
                               (context-independent) validation
-    bitcoin.core.key        - ECC pubkeys
-    bitcoin.core.script     - Scripts and opcodes
-    bitcoin.core.scripteval - Script evaluation/verification
-    bitcoin.core.serialize  - Serialization
+    omnicore.core.key        - ECC pubkeys
+    omnicore.core.script     - Scripts and opcodes
+    omnicore.core.scripteval - Script evaluation/verification
+    omnicore.core.serialize  - Serialization
 
 In the future the bitcoin.core may use the Satoshi sourcecode directly as a
 library. Non-consensus critical modules include the following:
 
-    bitcoin          - Chain selection
-    bitcoin.base58   - Base58 encoding
-    bitcoin.bloom    - Bloom filters (incomplete)
-    bitcoin.net      - Network communication (in flux)
-    bitcoin.messages - Network messages (in flux)
-    bitcoin.rpc      - Bitcoin Core RPC interface support
-    bitcoin.wallet   - Wallet-related code, currently Bitcoin address and
+    omnicore          - Chain selection
+    omnicore.base58   - Base58 encoding
+    omnicore.bloom    - Bloom filters (incomplete)
+    omnicore.net      - Network communication (in flux)
+    omnicore.messages - Network messages (in flux)
+    omnicore.rpc      - Bitcoin Core RPC interface support
+    omnicore.wallet   - Wallet-related code, currently Bitcoin address and
                        private key support
 
 Effort has been made to follow the Satoshi source relatively closely, for
@@ -85,8 +85,8 @@ spending a pay-to-script-hash transaction output:
 
 Do the following:
 
-    import bitcoin
-    bitcoin.SelectParams(NAME)
+    import omnicore
+    omnicore.SelectParams(NAME)
 
 Where NAME is one of 'testnet', 'mainnet', or 'regtest'. The chain currently
 selected is a global variable that changes behavior everywhere, just like in

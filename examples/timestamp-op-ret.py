@@ -20,14 +20,14 @@ if sys.version_info.major < 3:
     sys.exit(1)
 
 import hashlib
-import bitcoin.rpc
+import omnicore.rpc
 import sys
 
-from bitcoin import params
-from bitcoin.core import *
-from bitcoin.core.script import *
+from omnicore import params
+from omnicore.core import *
+from omnicore.core.script import *
 
-proxy = bitcoin.rpc.Proxy()
+proxy = omnicore.rpc.Proxy()
 
 assert len(sys.argv) > 1
 

@@ -13,8 +13,8 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from bitcoin.wallet import CBitcoinSecret, P2PKHBitcoinAddress
-from bitcoin.signmessage import BitcoinMessage, VerifyMessage, SignMessage
+from omnicore.wallet import CBitcoinSecret, P2PKHBitcoinAddress
+from omnicore.signmessage import BitcoinMessage, VerifyMessage, SignMessage
 
 
 def sign_message(key, msg):
@@ -35,9 +35,9 @@ def print_verbose(signature, key, msg):
     print("Message: %s" % msg)
     print("Signature: %s" % signature)
     print("Verified: %s" % VerifyMessage(address, message, signature))
-    print("\nTo verify using bitcoin core:")
+    print("\nTo verify using omnicore core:")
     print(
-        "\n`bitcoin-cli verifymessage %s '%s' '%s'`\n"
+        "\n`omnicore-cli verifymessage %s '%s' '%s'`\n"
         % (address, signature.decode("ascii"), msg)
     )
 

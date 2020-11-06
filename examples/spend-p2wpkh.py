@@ -21,8 +21,8 @@ if sys.version_info.major < 3:
 
 import hashlib
 
-from bitcoin import SelectParams
-from bitcoin.core import (
+from omnicore import SelectParams
+from omnicore.core import (
     b2x,
     b2lx,
     lx,
@@ -36,15 +36,15 @@ from bitcoin.core import (
     CMutableTransaction,
     Hash160,
 )
-from bitcoin.core.script import (
+from omnicore.core.script import (
     CScript,
     OP_0,
     SignatureHash,
     SIGHASH_ALL,
     SIGVERSION_WITNESS_V0,
 )
-from bitcoin.wallet import CBitcoinSecret, P2WPKHBitcoinAddress
-from bitcoin.rpc import Proxy
+from omnicore.wallet import CBitcoinSecret, P2WPKHBitcoinAddress
+from omnicore.rpc import Proxy
 
 SelectParams("regtest")
 connection = Proxy()

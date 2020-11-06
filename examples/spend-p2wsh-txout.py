@@ -21,8 +21,8 @@ if sys.version_info.major < 3:
 
 import hashlib
 
-from bitcoin import SelectParams
-from bitcoin.core import (
+from omnicore import SelectParams
+from omnicore.core import (
     b2x,
     lx,
     COIN,
@@ -33,7 +33,7 @@ from bitcoin.core import (
     CTxInWitness,
     CTxWitness,
 )
-from bitcoin.core.script import (
+from omnicore.core.script import (
     CScript,
     CScriptWitness,
     OP_0,
@@ -42,7 +42,7 @@ from bitcoin.core.script import (
     SIGHASH_ALL,
     SIGVERSION_WITNESS_V0,
 )
-from bitcoin.wallet import CBitcoinSecret, CBitcoinAddress, P2WSHBitcoinAddress
+from omnicore.wallet import CBitcoinSecret, CBitcoinAddress, P2WSHBitcoinAddress
 
 SelectParams("testnet")
 

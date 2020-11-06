@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# bitcoin documentation build configuration file, created by
+# omnicore documentation build configuration file, created by
 # sphinx-quickstart on Thu May 28 20:40:55 2015.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -24,7 +24,7 @@ import os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('..'))
 
-from bitcoin import __version__
+from omnicore import __version__
 
 # Prevent loading openssl when generating API docs. Either the whole library or
 # the necessary elliptic curve might not be available, causing import to fail.

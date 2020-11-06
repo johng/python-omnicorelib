@@ -11,7 +11,7 @@
 # propagated, or distributed except according to the terms contained in the
 # LICENSE file.
 
-"""Serialize some bitcoin datastructures and show them in serialized and repr form."""
+"""Serialize some omnicore datastructures and show them in serialized and repr form."""
 
 import sys
 
@@ -19,8 +19,8 @@ if sys.version_info.major < 3:
     sys.stderr.write("Sorry, Python 3.x required by this example.\n")
     sys.exit(1)
 
-from bitcoin import SelectParams
-from bitcoin.messages import msg_version, msg_tx, msg_block
+from omnicore import SelectParams
+from omnicore.messages import msg_version, msg_tx, msg_block
 
 SelectParams("mainnet")
 
