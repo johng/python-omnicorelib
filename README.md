@@ -1,5 +1,9 @@
 # python-omnicorelib
 
+```
+pip install python-omnicorelib
+```
+
 This python library provides an interface to the bitcoind fork omnicore.
 
 This library provides an easy interface to the bitcoin data
